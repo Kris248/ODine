@@ -1,0 +1,16 @@
+{
+  "name": "odine",
+  "private": true,
+  "version": "0.1.0",
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
+  "scripts": {
+    "dev:server": "npm run dev --workspace @odine/server",
+    "dev:admin": "npm run dev --workspace @odine/admin-panel",
+    "dev:customer": "npm run dev --workspace @odine/customer-app",
+    "dev:kds": "npm run dev --workspace @odine/kitchen-display",
+    "seed": "npm run seed --workspace @odine/server"
+  }
+}
