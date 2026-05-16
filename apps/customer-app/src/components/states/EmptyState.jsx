@@ -1,43 +1,45 @@
-import RoomServiceRoundedIcon from "@mui/icons-material/RoomServiceRounded";
-import { Button, Card, CardContent, Stack, Typography } from "@mui/material";
+import { Box, Button, Card, CardContent, Stack, Typography } from "@mui/material";
 
 export function EmptyState({
   title,
   description,
   actionLabel,
   onAction,
-  icon = <RoomServiceRoundedIcon sx={{ fontSize: 34 }} />
+  icon
 }) {
   return (
-    <Card sx={{ p: { xs: 1, sm: 2 } }}>
-      <CardContent>
-        <Stack spacing={2} alignItems="center" textAlign="center" sx={{ py: { xs: 3, md: 5 } }}>
-          <Stack
-            alignItems="center"
-            justifyContent="center"
-            sx={{
-              width: 72,
-              height: 72,
-              borderRadius: "50%",
-              bgcolor: "rgba(155, 91, 61, 0.1)",
-              color: "primary.main"
-            }}
-          >
-            {icon}
+    <Box sx={{ display: "grid", placeItems: "center", minHeight: "58vh", py: 4 }}>
+      <Card sx={{ width: "100%", maxWidth: 720 }}>
+        <CardContent sx={{ p: { xs: 2.5, md: 4 } }}>
+          <Stack spacing={2} alignItems="center" textAlign="center">
+            {icon ? (
+              <Box
+                sx={{
+                  width: 72,
+                  height: 72,
+                  borderRadius: "50%",
+                  bgcolor: "rgba(226, 55, 68, 0.10)",
+                  display: "grid",
+                  placeItems: "center"
+                }}
+              >
+                {icon}
+              </Box>
+            ) : null}
+            <Stack spacing={0.75}>
+              <Typography variant="h5">{title}</Typography>
+              <Typography color="text.secondary" sx={{ maxWidth: 520 }}>
+                {description}
+              </Typography>
+            </Stack>
+            {onAction ? (
+              <Button variant="contained" onClick={onAction}>
+                {actionLabel}
+              </Button>
+            ) : null}
           </Stack>
-          <Stack spacing={1} sx={{ maxWidth: 420 }}>
-            <Typography variant="h5">{title}</Typography>
-            <Typography variant="body1" color="text.secondary">
-              {description}
-            </Typography>
-          </Stack>
-          {actionLabel ? (
-            <Button variant="contained" onClick={onAction}>
-              {actionLabel}
-            </Button>
-          ) : null}
-        </Stack>
-      </CardContent>
-    </Card>
+        </CardContent>
+      </Card>
+    </Box>
   );
 }

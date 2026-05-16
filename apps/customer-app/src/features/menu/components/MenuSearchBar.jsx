@@ -1,30 +1,31 @@
+import CloseRoundedIcon from "@mui/icons-material/CloseRounded";
 import SearchRoundedIcon from "@mui/icons-material/SearchRounded";
-import TuneRoundedIcon from "@mui/icons-material/TuneRounded";
-import { InputAdornment, TextField } from "@mui/material";
+import { IconButton, InputAdornment, TextField } from "@mui/material";
 
-export function MenuSearchBar({ value, onChange }) {
+export function MenuSearchBar({ value, onChange, placeholder = "Search dishes, ingredients, or categories" }) {
   return (
     <TextField
-      fullWidth
-      placeholder="Search for skewers, bowls, cheesecakes..."
       value={value}
       onChange={(event) => onChange(event.target.value)}
+      placeholder={placeholder}
+      fullWidth
       InputProps={{
         startAdornment: (
           <InputAdornment position="start">
             <SearchRoundedIcon color="action" />
           </InputAdornment>
         ),
-        endAdornment: (
+        endAdornment: value ? (
           <InputAdornment position="end">
-            <TuneRoundedIcon color="disabled" />
+            <IconButton size="small" onClick={() => onChange("")} aria-label="Clear search">
+              <CloseRoundedIcon fontSize="small" />
+            </IconButton>
           </InputAdornment>
-        )
+        ) : null
       }}
       sx={{
         "& .MuiOutlinedInput-root": {
-          borderRadius: 4,
-          bgcolor: "rgba(255,255,255,0.82)"
+          bgcolor: "#fff"
         }
       }}
     />

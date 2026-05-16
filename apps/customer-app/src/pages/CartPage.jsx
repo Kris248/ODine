@@ -1,6 +1,6 @@
 import ArrowForwardRoundedIcon from "@mui/icons-material/ArrowForwardRounded";
 import ShoppingBagRoundedIcon from "@mui/icons-material/ShoppingBagRounded";
-import { Button, Card, CardContent, Stack, TextField, Typography } from "@mui/material";
+import { Box, Button, Card, CardContent, Stack, TextField, Typography } from "@mui/material";
 import { useEffect } from "react";
 import { useNavigate, useParams, useSearchParams } from "react-router-dom";
 import { AppHeader } from "../components/common/AppHeader.jsx";
@@ -114,16 +114,15 @@ export function CartPage() {
         onBack={() => navigate(-1)}
       />
 
-      <Stack
-        spacing={3}
+      <Box
         sx={{
           display: "grid",
-          gap: 3,
-          gridTemplateColumns: { xs: "1fr", lg: "minmax(0, 1fr) 340px" },
+          gap: 2.5,
+          gridTemplateColumns: { xs: "1fr", xl: "minmax(0, 1fr) 360px" },
           alignItems: "start"
         }}
       >
-        <Stack spacing={2}>
+        <Stack spacing={2.25}>
           {cartItems.map((item) => (
             <CartItemCard
               key={item.key}
@@ -136,9 +135,9 @@ export function CartPage() {
           ))}
 
           <Card>
-            <CardContent sx={{ p: 2.25 }}>
-              <Stack spacing={1.25}>
-                <Typography variant="h5">Special instructions</Typography>
+            <CardContent sx={{ p: 2.5 }}>
+              <Stack spacing={1.5}>
+                <Typography variant="h6">Special instructions</Typography>
                 <Typography color="text.secondary">
                   Add one note for the kitchen if you want the whole order handled a certain way.
                 </Typography>
@@ -154,29 +153,43 @@ export function CartPage() {
           </Card>
         </Stack>
 
-        <Stack spacing={2} sx={{ position: "sticky", top: 18 }}>
+        <Stack spacing={2.25} sx={{ position: { xl: "sticky" }, top: { xl: 16 } }}>
           <OrderSummaryCard
             cartItems={cartItems}
             summary={summary}
             currency={pricing.currency}
-            title="Order summary"
+            title="Review your order"
+            subtitle={`${itemCount} item${itemCount === 1 ? "" : "s"}`}
           />
-          <Button
-            variant="contained"
-            size="large"
-            endIcon={<ArrowForwardRoundedIcon />}
-            onClick={() => navigate(APP_ROUTES.checkout(restaurantId, tableId, seatId))}
-          >
-            Continue to checkout
-          </Button>
+
+          <Card>
+            <CardContent sx={{ p: 2.5 }}>
+              <Stack spacing={1.5}>
+                <Button
+                  variant="outlined"
+                  onClick={() => navigate(APP_ROUTES.home(restaurantId, tableId, seatId))}
+                >
+                  Continue ordering
+                </Button>
+                <Button
+                  variant="contained"
+                  size="large"
+                  endIcon={<ArrowForwardRoundedIcon />}
+                  onClick={() => navigate(APP_ROUTES.checkout(restaurantId, tableId, seatId))}
+                >
+                  Proceed to checkout
+                </Button>
+              </Stack>
+            </CardContent>
+          </Card>
         </Stack>
-      </Stack>
+      </Box>
 
       <StickyCartBar
         itemCount={itemCount}
         total={summary.total}
         currency={pricing.currency}
-        label="One more step before payment"
+        label="Ready for checkout"
         actionLabel="Checkout"
         onAction={() => navigate(APP_ROUTES.checkout(restaurantId, tableId, seatId))}
       />

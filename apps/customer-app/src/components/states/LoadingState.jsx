@@ -1,56 +1,34 @@
-import { Card, CardContent, Grid, Skeleton, Stack } from "@mui/material";
+import { Box, Card, CardContent, Skeleton, Stack, Typography } from "@mui/material";
 
-export function LoadingState() {
+export function LoadingState({ title = "Loading your table", description = "Fetching the menu, offers, and your live dining session." }) {
   return (
-    <Stack spacing={3}>
-      <Card>
-        <CardContent sx={{ p: { xs: 2, sm: 3 } }}>
-          <Stack spacing={2.5}>
-            <Skeleton variant="rounded" height={260} />
-            <Skeleton variant="text" width="42%" height={58} />
-            <Skeleton variant="text" width="64%" />
-            <Stack direction="row" spacing={1}>
-              <Skeleton variant="rounded" width={90} height={34} />
-              <Skeleton variant="rounded" width={110} height={34} />
-              <Skeleton variant="rounded" width={120} height={34} />
+    <Box sx={{ display: "grid", placeItems: "center", minHeight: "68vh", py: 4 }}>
+      <Card sx={{ width: "100%", maxWidth: 760 }}>
+        <CardContent sx={{ p: { xs: 2.5, md: 4 } }}>
+          <Stack spacing={2.25}>
+            <Stack spacing={1}>
+              <Skeleton variant="rounded" width="40%" height={32} />
+              <Skeleton variant="rounded" width="75%" height={22} />
+              <Typography variant="body2" color="text.secondary">
+                {description}
+              </Typography>
+            </Stack>
+
+            <Stack spacing={1.5}>
+              <Skeleton variant="rounded" height={180} />
+              <Stack direction="row" spacing={1.25}>
+                <Skeleton variant="rounded" width={110} height={38} />
+                <Skeleton variant="rounded" width={110} height={38} />
+                <Skeleton variant="rounded" width={110} height={38} />
+              </Stack>
+              <Stack spacing={1.25}>
+                <Skeleton variant="rounded" height={86} />
+                <Skeleton variant="rounded" height={86} />
+              </Stack>
             </Stack>
           </Stack>
         </CardContent>
       </Card>
-
-      <Card>
-        <CardContent sx={{ p: { xs: 2, sm: 3 } }}>
-          <Stack spacing={2}>
-            <Skeleton variant="rounded" height={56} />
-            <Stack direction="row" spacing={1}>
-              {Array.from({ length: 4 }).map((_, index) => (
-                <Skeleton key={index} variant="rounded" width={110} height={40} />
-              ))}
-            </Stack>
-          </Stack>
-        </CardContent>
-      </Card>
-
-      <Grid container spacing={2}>
-        {Array.from({ length: 6 }).map((_, index) => (
-          <Grid key={index} item xs={12} md={6}>
-            <Card>
-              <CardContent>
-                <Stack spacing={2}>
-                  <Skeleton variant="rounded" height={180} />
-                  <Skeleton variant="text" width="58%" height={34} />
-                  <Skeleton variant="text" width="92%" />
-                  <Skeleton variant="text" width="74%" />
-                  <Stack direction="row" justifyContent="space-between" alignItems="center">
-                    <Skeleton variant="text" width={90} />
-                    <Skeleton variant="rounded" width={120} height={42} />
-                  </Stack>
-                </Stack>
-              </CardContent>
-            </Card>
-          </Grid>
-        ))}
-      </Grid>
-    </Stack>
+    </Box>
   );
 }

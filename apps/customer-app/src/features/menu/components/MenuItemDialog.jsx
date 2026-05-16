@@ -1,202 +1,273 @@
 import AddRoundedIcon from "@mui/icons-material/AddRounded";
-import LocalFireDepartmentRoundedIcon from "@mui/icons-material/LocalFireDepartmentRounded";
+import CloseRoundedIcon from "@mui/icons-material/CloseRounded";
 import RemoveRoundedIcon from "@mui/icons-material/RemoveRounded";
 import {
   Box,
   Button,
-  Checkbox,
-  Chip,
   Dialog,
   DialogContent,
   DialogTitle,
   Divider,
-  FormControlLabel,
-  FormGroup,
   IconButton,
-  Radio,
-  RadioGroup,
   Stack,
   TextField,
   Typography,
-  useMediaQuery
+  useMediaQuery,
+  useTheme
 } from "@mui/material";
-import { useTheme } from "@mui/material/styles";
 import { useEffect, useMemo, useState } from "react";
-import {
-  calculateCustomizationDelta,
-  getDefaultSelectionState,
-  resolveSelectedCustomizations
-} from "../../../utils/cart.js";
+import { getDefaultSelectionState, resolveSelectedCustomizations } from "../../../utils/cart.js";
 import { formatCurrency, formatDietaryLabel, formatSpiceLabel } from "../../../utils/formatters.js";
 
-export function MenuItemDialog({ open, item, currency, onClose, onConfirm }) {
+function OptionButton({ active, label, priceDelta = 0, onClick }) {
+  return (
+    <Button
+      variant={active ? "contained" : "outlined"}
+      onClick={onClick}
+      sx={{
+        justifyContent: "space-between",
+        px: 1.5,
+        py: 1,
+        textAlign: "left",
+        alignItems: "center"
+      }}
+    >
+      <span>{label}</span>
+      {priceDelta ? <span>{priceDelta > 0 ? `+${priceDelta}` : priceDelta}</span> : null}
+    </Button>
+  );
+}
+
+export function MenuItemDialog({ open, item, currency = "INR", onClose, onAdd }) {
   const theme = useTheme();
   const fullScreen = useMediaQuery(theme.breakpoints.down("sm"));
-  const [selectionState, setSelectionState] = useState({});
   const [quantity, setQuantity] = useState(1);
-  const [specialInstructions, setSpecialInstructions] = useState("");
+  const [instructions, setInstructions] = useState("");
+  const [selectionState, setSelectionState] = useState({});
 
   useEffect(() => {
-    if (!item) {
-      return;
-    }
-
-    setSelectionState(getDefaultSelectionState(item.customizationGroups || []));
+    if (!item) return;
     setQuantity(1);
-    setSpecialInstructions("");
+    setInstructions("");
+    setSelectionState(getDefaultSelectionState(item.customizationGroups || []));
   }, [item]);
 
   const selectedCustomizations = useMemo(
     () => resolveSelectedCustomizations(item?.customizationGroups || [], selectionState),
     [item, selectionState]
   );
-  const customizationDelta = useMemo(
-    () => calculateCustomizationDelta(selectedCustomizations),
-    [selectedCustomizations]
-  );
 
-  const isSelectionValid = (item?.customizationGroups || []).every((group) => {
-    if (!group.required) {
-      return true;
-    }
+  if (!item) return null;
 
-    if (group.selectionType === "single") {
-      return Boolean(selectionState[group.id]);
-    }
+  function updateSingle(groupId, optionId) {
+    setSelectionState((current) => ({
+      ...current,
+      [groupId]: optionId
+    }));
+  }
 
-    return (selectionState[group.id] || []).length > 0;
-  });
-
-  if (!item) {
-    return null;
+  function toggleMultiple(groupId, optionId) {
+    setSelectionState((current) => {
+      const existing = current[groupId] || [];
+      const next = existing.includes(optionId)
+        ? existing.filter((entry) => entry !== optionId)
+        : [...existing, optionId];
+      return { ...current, [groupId]: next };
+    });
   }
 
   return (
-    <Dialog open={open} onClose={onClose} fullScreen={fullScreen} fullWidth maxWidth="sm">
-      <DialogTitle sx={{ pb: 1 }}>
-        <Stack spacing={1}>
-          <Typography variant="h4">{item.name}</Typography>
-          <Stack direction="row" spacing={1} useFlexGap flexWrap="wrap">
-            <Chip label={formatDietaryLabel(item.dietaryType)} color="secondary" variant="outlined" />
-            <Chip
-              icon={<LocalFireDepartmentRoundedIcon sx={{ color: "inherit !important" }} />}
-              label={formatSpiceLabel(item.spiceLevel)}
-              sx={{ bgcolor: "rgba(250, 201, 132, 0.16)", color: "#93581d" }}
-            />
-          </Stack>
-        </Stack>
-      </DialogTitle>
-      <DialogContent sx={{ pb: 3 }}>
-        <Stack spacing={2.5}>
+    <Dialog
+      open={open}
+      onClose={onClose}
+      fullScreen={fullScreen}
+      fullWidth
+      maxWidth="md"
+      PaperProps={{
+        sx: {
+          borderRadius: fullScreen ? 0 : 5,
+          overflow: "hidden",
+          bgcolor: "#FFFDFB"
+        }
+      }}
+    >
+      <DialogTitle sx={{ p: 0 }}>
+        <Box sx={{ position: "relative" }}>
           <Box
+            component="img"
+            src={item.image}
+            alt={item.name}
             sx={{
-              height: 230,
-              borderRadius: 5,
-              backgroundImage: `url(${item.image})`,
-              backgroundSize: "cover",
-              backgroundPosition: "center"
+              width: "100%",
+              height: { xs: 240, sm: 320 },
+              objectFit: "cover"
             }}
           />
+          <IconButton
+            onClick={onClose}
+            aria-label="Close"
+            sx={{
+              position: "absolute",
+              top: 16,
+              right: 16,
+              bgcolor: "rgba(255,255,255,0.94)"
+            }}
+          >
+            <CloseRoundedIcon />
+          </IconButton>
+        </Box>
+      </DialogTitle>
 
-          <Typography color="text.secondary">{item.description}</Typography>
-          <Typography variant="body2" color="text.secondary">
-            {item.ingredients.join(" • ")}
-          </Typography>
-
-          {(item.customizationGroups || []).map((group) => (
-            <Stack key={group.id} spacing={1.25}>
-              <Typography variant="h6">
-                {group.name}
-                {group.required ? " *" : ""}
-              </Typography>
-              {group.selectionType === "single" ? (
-                <RadioGroup
-                  value={selectionState[group.id] || ""}
-                  onChange={(event) =>
-                    setSelectionState((current) => ({
-                      ...current,
-                      [group.id]: event.target.value
-                    }))
-                  }
+      <DialogContent sx={{ p: { xs: 2, sm: 3 } }}>
+        <Stack spacing={2.25}>
+          <Stack spacing={0.8}>
+            <Stack direction="row" spacing={1} useFlexGap flexWrap="wrap">
+              <Box
+                sx={{
+                  px: 1.25,
+                  py: 0.6,
+                  borderRadius: 999,
+                  bgcolor: "primary.main",
+                  color: "#fff",
+                  fontSize: 12,
+                  fontWeight: 800
+                }}
+              >
+                {formatCurrency(item.price, currency)}
+              </Box>
+              <Box
+                sx={{
+                  px: 1.25,
+                  py: 0.6,
+                  borderRadius: 999,
+                  bgcolor: "rgba(226,55,68,0.10)",
+                  color: "primary.main",
+                  fontSize: 12,
+                  fontWeight: 800
+                }}
+              >
+                {formatDietaryLabel(item.dietaryType)}
+              </Box>
+              {item.spiceLevel ? (
+                <Box
+                  sx={{
+                    px: 1.25,
+                    py: 0.6,
+                    borderRadius: 999,
+                    bgcolor: "rgba(17,24,39,0.06)",
+                    color: "text.secondary",
+                    fontSize: 12,
+                    fontWeight: 700
+                  }}
                 >
-                  {group.options.map((option) => (
-                    <FormControlLabel
-                      key={option.id}
-                      value={option.id}
-                      control={<Radio />}
-                      label={`${option.label}${option.priceDelta ? ` (${formatCurrency(option.priceDelta, currency)})` : ""}`}
-                    />
-                  ))}
-                </RadioGroup>
-              ) : (
-                <FormGroup>
-                  {group.options.map((option) => {
-                    const currentValues = selectionState[group.id] || [];
-
-                    return (
-                      <FormControlLabel
-                        key={option.id}
-                        control={
-                          <Checkbox
-                            checked={currentValues.includes(option.id)}
-                            onChange={(event) =>
-                              setSelectionState((current) => ({
-                                ...current,
-                                [group.id]: event.target.checked
-                                  ? [...(current[group.id] || []), option.id]
-                                  : (current[group.id] || []).filter((value) => value !== option.id)
-                              }))
-                            }
-                          />
-                        }
-                        label={`${option.label}${option.priceDelta ? ` (${formatCurrency(option.priceDelta, currency)})` : ""}`}
-                      />
-                    );
-                  })}
-                </FormGroup>
-              )}
+                  {formatSpiceLabel(item.spiceLevel)}
+                </Box>
+              ) : null}
             </Stack>
-          ))}
+            <Typography variant="h4" sx={{ fontSize: { xs: 24, sm: 30 } }}>
+              {item.name}
+            </Typography>
+            <Typography color="text.secondary">{item.description}</Typography>
+          </Stack>
 
-          <TextField
-            label="Kitchen note"
-            placeholder="Less oil, no onion, serve dessert later..."
-            multiline
-            minRows={3}
-            value={specialInstructions}
-            onChange={(event) => setSpecialInstructions(event.target.value)}
-          />
+          {item.ingredients?.length ? (
+            <Stack spacing={1}>
+              <Typography variant="subtitle2" color="text.secondary">
+                Ingredients
+              </Typography>
+              <Typography variant="body2">{item.ingredients.join(" • ")}</Typography>
+            </Stack>
+          ) : null}
 
           <Divider />
 
-          <Stack direction="row" justifyContent="space-between" alignItems="center">
-            <Stack direction="row" spacing={1} alignItems="center">
-              <IconButton
-                onClick={() => setQuantity((current) => Math.max(1, current - 1))}
-                aria-label="Decrease quantity"
-              >
-                <RemoveRoundedIcon />
-              </IconButton>
-              <Typography variant="h6">{quantity}</Typography>
-              <IconButton onClick={() => setQuantity((current) => current + 1)} aria-label="Increase quantity">
-                <AddRoundedIcon />
-              </IconButton>
-            </Stack>
+          <Stack spacing={2}>
+            {(item.customizationGroups || []).map((group) => (
+              <Stack key={group.id} spacing={1.1}>
+                <Typography variant="subtitle1" fontWeight={800}>
+                  {group.name}
+                </Typography>
+                <Typography variant="body2" color="text.secondary">
+                  {group.required ? "Required" : "Optional"}
+                </Typography>
+
+                <Stack spacing={1}>
+                  {group.selectionType === "single"
+                    ? group.options.map((option) => (
+                        <OptionButton
+                          key={option.id}
+                          label={option.label}
+                          priceDelta={option.priceDelta}
+                          active={selectionState[group.id] === option.id}
+                          onClick={() => updateSingle(group.id, option.id)}
+                        />
+                      ))
+                    : group.options.map((option) => {
+                        const active = (selectionState[group.id] || []).includes(option.id);
+                        return (
+                          <OptionButton
+                            key={option.id}
+                            label={option.label}
+                            priceDelta={option.priceDelta}
+                            active={active}
+                            onClick={() => toggleMultiple(group.id, option.id)}
+                          />
+                        );
+                      })}
+                </Stack>
+              </Stack>
+            ))}
+          </Stack>
+
+          <Divider />
+
+          <Stack spacing={1.25}>
+            <Typography variant="subtitle1" fontWeight={800}>
+              Special instructions
+            </Typography>
+            <TextField
+              placeholder="Less spicy, sauce on the side, no coriander..."
+              multiline
+              minRows={3}
+              value={instructions}
+              onChange={(event) => setInstructions(event.target.value)}
+            />
+          </Stack>
+
+          <Stack direction="row" spacing={1.25} alignItems="center">
             <Button
-              variant="contained"
-              disabled={!isSelectionValid}
-              onClick={() =>
-                onConfirm({
-                  item,
-                  quantity,
-                  selectedCustomizations,
-                  specialInstructions
-                })
-              }
+              variant="outlined"
+              onClick={() => setQuantity((current) => Math.max(1, current - 1))}
+              startIcon={<RemoveRoundedIcon />}
+              sx={{ minWidth: 132 }}
             >
-              Add {formatCurrency((item.price + customizationDelta) * quantity, currency)}
+              {quantity}
+            </Button>
+            <Button
+              variant="outlined"
+              onClick={() => setQuantity((current) => current + 1)}
+              startIcon={<AddRoundedIcon />}
+              sx={{ minWidth: 132 }}
+            >
+              Add one more
             </Button>
           </Stack>
+
+          <Button
+            variant="contained"
+            size="large"
+            onClick={() =>
+              onAdd?.({
+                item,
+                quantity,
+                selectedCustomizations,
+                specialInstructions: instructions
+              })
+            }
+            sx={{ py: 1.4 }}
+          >
+            Add to cart • {formatCurrency(item.price * quantity, currency)}
+          </Button>
         </Stack>
       </DialogContent>
     </Dialog>

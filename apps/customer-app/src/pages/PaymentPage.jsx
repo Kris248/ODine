@@ -1,7 +1,7 @@
 import CheckCircleRoundedIcon from "@mui/icons-material/CheckCircleRounded";
 import ReceiptLongRoundedIcon from "@mui/icons-material/ReceiptLongRounded";
 import SyncRoundedIcon from "@mui/icons-material/SyncRounded";
-import { Alert, Button, Card, CardContent, Chip, Stack, Typography } from "@mui/material";
+import { Alert, Box, Button, Card, CardContent, Chip, Stack, Typography } from "@mui/material";
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate, useParams, useSearchParams } from "react-router-dom";
 import { AppHeader } from "../components/common/AppHeader.jsx";
@@ -182,7 +182,7 @@ export function PaymentPage() {
   const callToActionLabel = activeCheckoutSession
     ? confirmingPayment
       ? "Waiting for webhook confirmation..."
-      : "Confirm secure test payment"
+      : "Confirm payment"
     : creatingSession
       ? "Creating payment request..."
       : "Create payment request";
@@ -196,36 +196,46 @@ export function PaymentPage() {
         onBack={() => navigate(-1)}
       />
 
-      <Stack
-        spacing={3}
+      <Box
         sx={{
           display: "grid",
-          gap: 3,
-          gridTemplateColumns: { xs: "1fr", lg: "minmax(0, 1fr) 340px" },
+          gap: 2.5,
+          gridTemplateColumns: { xs: "1fr", xl: "minmax(0, 1fr) 360px" },
           alignItems: "start"
         }}
       >
-        <Stack spacing={2}>
-          {resolvedPaymentMethods.map((method) => (
-            <PaymentMethodCard
-              key={method.id}
-              method={method}
-              selected={selectedPaymentMethod?.id === method.id}
-              onSelect={setPaymentMethod}
-            />
-          ))}
+        <Stack spacing={2.25}>
+          <Card>
+            <CardContent sx={{ p: 2.5 }}>
+              <Stack spacing={1.5}>
+                <Typography variant="h6">Choose how to pay</Typography>
+                <Typography color="text.secondary">
+                  Pick the payment method, then create a checkout request for the live order.
+                </Typography>
+              </Stack>
+            </CardContent>
+          </Card>
+
+          <Stack spacing={1.5}>
+            {resolvedPaymentMethods.map((method) => (
+              <PaymentMethodCard
+                key={method.id}
+                method={method}
+                selected={selectedPaymentMethod?.id === method.id}
+                onSelect={setPaymentMethod}
+              />
+            ))}
+          </Stack>
 
           <Card>
-            <CardContent sx={{ p: 2.25 }}>
-              <Stack spacing={1.5}>
-                <Typography variant="h5">Final review</Typography>
+            <CardContent sx={{ p: 2.5 }}>
+              <Stack spacing={1.2}>
+                <Typography variant="h6">Final review</Typography>
                 <Stack direction="row" spacing={1} useFlexGap flexWrap="wrap">
                   <Chip label={`Table ${resolvedTable?.label || tableId}`} />
                   {guestDetails.name ? <Chip label={`Guest ${guestDetails.name}`} /> : null}
                   {guestDetails.phone ? <Chip label={guestDetails.phone} /> : null}
-                  {selectedPaymentMethod ? (
-                    <Chip label={selectedPaymentMethod.label} color="primary" />
-                  ) : null}
+                  {selectedPaymentMethod ? <Chip label={selectedPaymentMethod.label} color="primary" /> : null}
                 </Stack>
                 <Typography color="text.secondary">
                   {orderNote || "No extra kitchen note added for this order."}
@@ -238,36 +248,28 @@ export function PaymentPage() {
             <Card
               sx={{
                 background:
-                  "linear-gradient(135deg, rgba(42,29,25,0.96), rgba(112,128,96,0.94))",
-                color: "#fffaf4"
+                  "linear-gradient(135deg, rgba(255,255,255,0.98), rgba(255,240,241,0.96))",
+                border: "1px solid rgba(226,55,68,0.18)"
               }}
             >
               <CardContent sx={{ p: 2.5 }}>
                 <Stack spacing={1.5}>
-                  <Stack direction="row" justifyContent="space-between" alignItems="center">
-                    <Typography variant="h5">Payment request created</Typography>
+                  <Stack direction="row" justifyContent="space-between" alignItems="center" spacing={1.5}>
+                    <Typography variant="h6">Payment request created</Typography>
                     <Chip
                       icon={<CheckCircleRoundedIcon sx={{ color: "inherit !important" }} />}
                       label={activeCheckoutSession.lifecycleStatus}
-                      sx={{ bgcolor: "rgba(255,255,255,0.16)", color: "inherit" }}
+                      color="success"
+                      variant="outlined"
                     />
                   </Stack>
-                  <Typography sx={{ color: "rgba(255,250,244,0.8)" }}>
+                  <Typography color="text.secondary">
                     The kitchen will see this order only after the backend verifies the payment webhook.
                   </Typography>
                   <Stack direction="row" spacing={1} useFlexGap flexWrap="wrap">
-                    <Chip
-                      label={`Ref ${activeCheckoutSession.payment.paymentReference}`}
-                      sx={{ bgcolor: "rgba(255,255,255,0.16)", color: "inherit" }}
-                    />
-                    <Chip
-                      label={`Gateway ${activeCheckoutSession.payment.gatewayOrderId}`}
-                      sx={{ bgcolor: "rgba(255,255,255,0.16)", color: "inherit" }}
-                    />
-                    <Chip
-                      label={`Receipt ${activeCheckoutSession.payment.receiptNumber}`}
-                      sx={{ bgcolor: "rgba(255,255,255,0.16)", color: "inherit" }}
-                    />
+                    <Chip label={`Ref ${activeCheckoutSession.payment.paymentReference}`} variant="outlined" />
+                    <Chip label={`Gateway ${activeCheckoutSession.payment.gatewayOrderId}`} variant="outlined" />
+                    <Chip label={`Receipt ${activeCheckoutSession.payment.receiptNumber}`} variant="outlined" />
                   </Stack>
                 </Stack>
               </CardContent>
@@ -277,12 +279,13 @@ export function PaymentPage() {
           {paymentError ? <Alert severity="error">{paymentError}</Alert> : null}
         </Stack>
 
-        <Stack spacing={2} sx={{ position: "sticky", top: 18 }}>
+        <Stack spacing={2.25} sx={{ position: { xl: "sticky" }, top: { xl: 16 } }}>
           <OrderSummaryCard
             cartItems={cartItems}
             summary={summary}
             currency={pricing.currency}
             title={activeCheckoutSession ? "Awaiting confirmation" : "Pay and confirm"}
+            subtitle="Everything is ready at the table"
           />
           {!activeCheckoutSession ? (
             <Button
@@ -306,7 +309,7 @@ export function PaymentPage() {
             </Button>
           )}
         </Stack>
-      </Stack>
+      </Box>
 
       <StickyCartBar
         itemCount={itemCount}

@@ -1,16 +1,14 @@
 import ArrowForwardRoundedIcon from "@mui/icons-material/ArrowForwardRounded";
 import BoltRoundedIcon from "@mui/icons-material/BoltRounded";
-import ExpandMoreRoundedIcon from "@mui/icons-material/ExpandMoreRounded";
+import SearchRoundedIcon from "@mui/icons-material/SearchRounded";
+import ShoppingBagRoundedIcon from "@mui/icons-material/ShoppingBagRounded";
 import {
-  Accordion,
-  AccordionDetails,
-  AccordionSummary,
   Box,
   Button,
   Card,
   CardContent,
   Chip,
-  Paper,
+  Divider,
   Stack,
   Typography
 } from "@mui/material";
@@ -20,7 +18,6 @@ import { EmptyState } from "../components/states/EmptyState.jsx";
 import { ErrorState } from "../components/states/ErrorState.jsx";
 import { LoadingState } from "../components/states/LoadingState.jsx";
 import { APP_ROUTES } from "../constants/routes.js";
-import { CartItemCard } from "../features/cart/components/CartItemCard.jsx";
 import { StickyCartBar } from "../features/cart/components/StickyCartBar.jsx";
 import { CategoryTabs } from "../features/menu/components/CategoryTabs.jsx";
 import { MenuItemCard } from "../features/menu/components/MenuItemCard.jsx";
@@ -40,24 +37,22 @@ export function MenuPage() {
   const navigate = useNavigate();
   const { loading, error, data } = useRestaurantExperience(restaurantId, tableId, seatId);
   const {
-    cartItems,
     itemCount,
     summary,
-    restaurant,
     hydrateRestaurant,
     addToCart,
-    changeQuantity,
-    removeItem
+    cartItems,
+    restaurant,
+    table
   } = useOrdering();
+
   const [activeCategoryId, setActiveCategoryId] = useState("");
   const [search, setSearch] = useState("");
   const [selectedItem, setSelectedItem] = useState(null);
   const deferredSearch = useDeferredValue(search);
 
   useEffect(() => {
-    if (!data) {
-      return;
-    }
+    if (!data) return;
 
     hydrateRestaurant({
       session: data.session,
@@ -69,32 +64,23 @@ export function MenuPage() {
   }, [data, hydrateRestaurant]);
 
   const sections = useMemo(() => {
-    if (!data) {
-      return [];
-    }
+    if (!data) return [];
 
     const query = deferredSearch.trim().toLowerCase();
 
     return data.categories
-      .filter((category) => !activeCategoryId || category.id === activeCategoryId)
       .map((category) => ({
         ...category,
         items: data.menuItems.filter((item) => {
-          if (item.categoryId !== category.id) {
-            return false;
-          }
-
-          if (!query) {
-            return true;
-          }
-
-          return [item.name, item.description, item.ingredients.join(" ")]
-            .join(" ")
-            .toLowerCase()
-            .includes(query);
+          if (item.categoryId !== category.id) return false;
+          if (!query) return true;
+          return [item.name, item.description, ...(item.ingredients || [])].join(" ").toLowerCase().includes(query);
         })
       }))
-      .filter((category) => category.items.length > 0);
+      .filter((category) => {
+        if (activeCategoryId && category.id !== activeCategoryId) return false;
+        return category.items.length > 0;
+      });
   }, [activeCategoryId, data, deferredSearch]);
 
   if (loading) {
@@ -120,8 +106,6 @@ export function MenuPage() {
 
   const currency = data.pricing.currency;
   const featuredCategories = data.categories.filter((category) => category.featured);
-  const activeSection = activeCategoryId ? sections.find((section) => section.id === activeCategoryId) : null;
-  const visibleSections = activeCategoryId ? (activeSection ? [activeSection] : []) : sections;
 
   function handleQuickAdd(item) {
     addToCart(
@@ -134,238 +118,294 @@ export function MenuPage() {
     );
   }
 
+  function handleDialogAdd(payload) {
+    addToCart(
+      createCartLine({
+        item: payload.item,
+        quantity: payload.quantity,
+        selectedCustomizations: payload.selectedCustomizations,
+        specialInstructions: payload.specialInstructions
+      })
+    );
+    setSelectedItem(null);
+  }
+
+  const activeSection = activeCategoryId ? sections.find((section) => section.id === activeCategoryId) : null;
+
   return (
     <CustomerLayout>
-      <RestaurantHero restaurant={data.restaurant} tableLabel={data.table.label} />
+      <Stack spacing={2.5}>
+        <Stack
+          direction={{ xs: "column", lg: "row" }}
+          spacing={2.5}
+          alignItems="flex-start"
+        >
+          <Box sx={{ flex: 1, minWidth: 0 }}>
+            <RestaurantHero restaurant={data.restaurant} tableLabel={data.table.label} />
+          </Box>
 
-      <Stack spacing={3}>
+          <Card
+            sx={{
+              width: { xs: "100%", lg: 360 },
+              position: { lg: "sticky" },
+              top: { lg: 16 }
+            }}
+          >
+            <CardContent sx={{ p: 2.5 }}>
+              <Stack spacing={2}>
+                <Stack spacing={0.4}>
+                  <Typography variant="subtitle2" color="text.secondary">
+                    Table status
+                  </Typography>
+                  <Typography variant="h6">Fast, tableside browsing</Typography>
+                  <Typography variant="body2" color="text.secondary">
+                    Search dishes, open details, and add to cart with one tap.
+                  </Typography>
+                </Stack>
+
+                <Divider />
+
+                <Stack spacing={1.2}>
+                  <Typography variant="subtitle2" color="text.secondary">
+                    Live cart
+                  </Typography>
+                  <Typography variant="body1" fontWeight={800}>
+                    {itemCount} item{itemCount === 1 ? "" : "s"}
+                  </Typography>
+                  <Typography variant="body2" color="text.secondary">
+                    {formatCurrency(summary.total, currency)} total
+                  </Typography>
+                  <Button
+                    variant="contained"
+                    endIcon={<ShoppingBagRoundedIcon />}
+                    onClick={() => navigate(APP_ROUTES.cart(restaurantId, tableId, seatId))}
+                    disabled={!itemCount}
+                  >
+                    Open cart
+                  </Button>
+                </Stack>
+              </Stack>
+            </CardContent>
+          </Card>
+        </Stack>
+
+        <Card>
+          <CardContent sx={{ p: { xs: 2, sm: 2.5 } }}>
+            <Stack spacing={2}>
+              <Stack direction={{ xs: "column", md: "row" }} spacing={1.5} alignItems="stretch">
+                <Box sx={{ flex: 1 }}>
+                  <MenuSearchBar value={search} onChange={setSearch} />
+                </Box>
+                <Button
+                  variant="outlined"
+                  startIcon={<BoltRoundedIcon />}
+                  onClick={() => {
+                    setSearch("");
+                    setActiveCategoryId("");
+                  }}
+                  sx={{ minWidth: { md: 180 } }}
+                >
+                  Reset filters
+                </Button>
+              </Stack>
+
+              <CategoryTabs
+                categories={data.categories}
+                activeCategoryId={activeCategoryId}
+                onSelectCategory={(categoryId) =>
+                  startTransition(() => {
+                    setActiveCategoryId(categoryId);
+                  })
+                }
+              />
+            </Stack>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardContent sx={{ p: { xs: 2, sm: 2.5 } }}>
+            <Stack spacing={2}>
+              <Stack direction="row" justifyContent="space-between" alignItems="center" spacing={2}>
+                <Box>
+                  <Typography variant="h6">Featured categories</Typography>
+                  <Typography variant="body2" color="text.secondary">
+                    Fast access to the most popular menu sections.
+                  </Typography>
+                </Box>
+                <Chip icon={<SearchRoundedIcon />} label={`${data.menuItems.length} dishes`} />
+              </Stack>
+
+              <Box
+                sx={{
+                  display: "grid",
+                  gridTemplateColumns: {
+                    xs: "repeat(2, minmax(0, 1fr))",
+                    sm: "repeat(3, minmax(0, 1fr))",
+                    lg: "repeat(4, minmax(0, 1fr))"
+                  },
+                  gap: 1.5
+                }}
+              >
+                {featuredCategories.map((category) => {
+                  const count = data.menuItems.filter((item) => item.categoryId === category.id).length;
+                  return (
+                    <Card
+                      key={category.id}
+                      onClick={() =>
+                        startTransition(() => {
+                          setActiveCategoryId(category.id);
+                        })
+                      }
+                      sx={{
+                        cursor: "pointer",
+                        overflow: "hidden",
+                        border:
+                          activeCategoryId === category.id ? "1px solid rgba(226,55,68,0.50)" : undefined,
+                        boxShadow:
+                          activeCategoryId === category.id ? "0 16px 40px rgba(226,55,68,0.10)" : undefined
+                      }}
+                    >
+                      <Box
+                        component="img"
+                        src={category.image}
+                        alt={category.name}
+                        sx={{ width: "100%", aspectRatio: "1.1 / 1", objectFit: "cover" }}
+                      />
+                      <CardContent sx={{ p: 1.5 }}>
+                        <Typography variant="subtitle1" fontWeight={800} noWrap>
+                          {category.name}
+                        </Typography>
+                        <Typography variant="body2" color="text.secondary" sx={{ mt: 0.25 }}>
+                          {count} dishes
+                        </Typography>
+                      </CardContent>
+                    </Card>
+                  );
+                })}
+              </Box>
+            </Stack>
+          </CardContent>
+        </Card>
+
+        {sections.length === 0 ? (
+          <EmptyState
+            title="No dishes matched that search"
+            description="Try a broader flavour, ingredient, or category to see more of the menu."
+            actionLabel="Clear search"
+            onAction={() => {
+              setSearch("");
+              setActiveCategoryId("");
+            }}
+          />
+        ) : null}
+
+        {activeCategoryId && activeSection ? (
+          <Card>
+            <CardContent sx={{ p: 2.25 }}>
+              <Stack direction="row" justifyContent="space-between" alignItems="center" spacing={2}>
+                <Box>
+                  <Typography variant="subtitle2" color="text.secondary">
+                    Showing category
+                  </Typography>
+                  <Typography variant="h6">{activeSection.name}</Typography>
+                </Box>
+                <Button size="small" onClick={() => setActiveCategoryId("")}>Show all sections</Button>
+              </Stack>
+            </CardContent>
+          </Card>
+        ) : null}
+
         <Box
           sx={{
             display: "grid",
-            gap: 3,
-            gridTemplateColumns: { xs: "1fr", lg: "minmax(0, 1fr) 320px" },
+            gap: 2.5,
+            gridTemplateColumns: { xs: "1fr", xl: "minmax(0, 1fr) 360px" },
             alignItems: "start"
           }}
         >
-          <Stack spacing={3}>
-            <Card>
-              <CardContent sx={{ p: { xs: 2.25, md: 3 } }}>
-                <Stack spacing={2.25}>
-                  <Stack spacing={0.5}>
-                    <Typography variant="h5">Featured categories</Typography>
-                    <Typography color="text.secondary">
-                      Move fast with chef-picked sections, then fine-tune with search.
-                    </Typography>
-                  </Stack>
+          <Stack spacing={2.5}>
+            {sections.map((section) => (
+              <Card key={section.id}>
+                <CardContent sx={{ p: { xs: 2, sm: 2.5 } }}>
+                  <Stack spacing={2}>
+                    <Stack direction="row" justifyContent="space-between" alignItems="center" spacing={2}>
+                      <Box>
+                        <Typography variant="h6">{section.name}</Typography>
+                        <Typography variant="body2" color="text.secondary">
+                          {section.description}
+                        </Typography>
+                      </Box>
+                      <Chip label={`${section.items.length} items`} variant="outlined" />
+                    </Stack>
 
-                  <Box
-                    sx={{
-                      display: "grid",
-                      gap: 1.5,
-                      gridTemplateColumns: { xs: "repeat(2, minmax(0, 1fr))", md: "repeat(4, minmax(0, 1fr))" }
-                    }}
-                  >
-                    {featuredCategories.map((category) => (
-                      <Paper
-                        key={category.id}
-                        onClick={() =>
-                          startTransition(() => {
-                            setActiveCategoryId(category.id);
-                          })
+                    <Box
+                      sx={{
+                        display: "grid",
+                        gap: 1.5,
+                        gridTemplateColumns: {
+                          xs: "1fr",
+                          sm: "repeat(2, minmax(0, 1fr))"
                         }
-                        sx={{
-                          p: 1.2,
-                          borderRadius: 4,
-                          cursor: "pointer",
-                          border:
-                            activeCategoryId === category.id
-                              ? "1px solid rgba(155, 91, 61, 0.28)"
-                              : "1px solid rgba(121, 88, 71, 0.08)"
-                        }}
-                      >
-                        <Stack spacing={1.2}>
-                          <Box
-                            sx={{
-                              height: 100,
-                              borderRadius: 3,
-                              backgroundImage: `url(${category.image})`,
-                              backgroundSize: "cover",
-                              backgroundPosition: "center"
-                            }}
-                          />
-                          <Typography fontWeight={700}>{category.name}</Typography>
-                          <Typography variant="body2" color="text.secondary">
-                            {category.description}
-                          </Typography>
-                        </Stack>
-                      </Paper>
-                    ))}
-                  </Box>
-                </Stack>
-              </CardContent>
-            </Card>
-
-            <Paper
-              sx={{
-                position: "sticky",
-                top: { xs: 10, md: 18 },
-                zIndex: 5,
-                p: { xs: 1.5, md: 2 },
-                borderRadius: 5
-              }}
-            >
-              <Stack spacing={1.5}>
-                <MenuSearchBar value={search} onChange={setSearch} />
-                <CategoryTabs
-                  categories={data.categories}
-                  activeCategoryId={activeCategoryId}
-                  onSelectCategory={(categoryId) =>
-                    startTransition(() => {
-                      setActiveCategoryId(categoryId);
-                    })
-                  }
-                />
-              </Stack>
-            </Paper>
-
-            {sections.length === 0 ? (
-              <EmptyState
-                title="No dishes matched that search"
-                description="Try a broader flavour, ingredient, or category to see more of the menu."
-                actionLabel="Clear search"
-                onAction={() => {
-                  setSearch("");
-                  setActiveCategoryId("");
-                }}
-              />
-            ) : null}
-
-            {activeCategoryId && activeSection ? (
-              <Paper sx={{ p: 2, borderRadius: 4, mb: 2, backgroundColor: "rgba(255,255,255,0.95)" }}>
-                <Stack direction="row" justifyContent="space-between" alignItems="center" spacing={2}>
-                  <Box>
-                    <Typography variant="h6">Showing:</Typography>
-                    <Typography variant="subtitle1" fontWeight={700}>
-                      {activeSection.name}
-                    </Typography>
-                  </Box>
-                  <Button size="small" onClick={() => setActiveCategoryId("")}>Show all sections</Button>
-                </Stack>
-              </Paper>
-            ) : null}
-
-            {visibleSections.map((section) => (
-              <Accordion key={section.id} defaultExpanded={activeCategoryId === section.id} sx={{ borderRadius: 4, overflow: "hidden", boxShadow: "0 10px 24px rgba(15, 23, 42, 0.06)" }}>
-                <AccordionSummary
-                  expandIcon={<ExpandMoreRoundedIcon />}
-                  sx={{ paddingX: 2, paddingY: 1.5, backgroundColor: "rgba(255,255,255,0.96)" }}
-                >
-                  <Stack spacing={0.5} sx={{ flex: 1 }}>
-                    <Typography variant="h5">{section.name}</Typography>
-                    <Typography color="text.secondary">{section.description}</Typography>
+                      }}
+                    >
+                      {section.items.map((item) => (
+                        <MenuItemCard
+                          key={item.id}
+                          item={item}
+                          currency={currency}
+                          onOpen={() => setSelectedItem(item)}
+                          onQuickAdd={() => handleQuickAdd(item)}
+                        />
+                      ))}
+                    </Box>
                   </Stack>
-                  <Chip
-                    label={`${section.items.length} item${section.items.length > 1 ? "s" : ""}`}
-                    sx={{ ml: 2 }}
-                  />
-                </AccordionSummary>
-                <AccordionDetails sx={{ padding: 2, pt: 0 }}>
-                  <Box
-                    sx={{
-                      display: "grid",
-                      gap: 2,
-                      gridTemplateColumns: { xs: "1fr", md: "repeat(2, minmax(0, 1fr))" }
-                    }}
-                  >
-                    {section.items.map((item) => (
-                      <MenuItemCard
-                        key={item.id}
-                        item={item}
-                        currency={currency}
-                        onOpenDetails={setSelectedItem}
-                        onQuickAdd={handleQuickAdd}
-                      />
-                    ))}
-                  </Box>
-                </AccordionDetails>
-              </Accordion>
+                </CardContent>
+              </Card>
             ))}
           </Stack>
 
-          <Stack spacing={2} sx={{ display: { xs: "none", lg: "flex" }, position: "sticky", top: 18 }}>
+          <Stack spacing={2.5} sx={{ position: { xl: "sticky" }, top: { xl: 16 } }}>
             <Card>
-              <CardContent sx={{ p: 2.25 }}>
-                <Stack spacing={1.25}>
-                  <Typography variant="h5">Your table</Typography>
-                  <Typography color="text.secondary">
-                    {restaurant?.name || data.restaurant.name} • {data.table.label}
+              <CardContent sx={{ p: 2.5 }}>
+                <Stack spacing={1.5}>
+                  <Typography variant="subtitle2" color="text.secondary">
+                    Quick tips
                   </Typography>
-                  <Stack direction="row" spacing={1} useFlexGap flexWrap="wrap">
-                    {data.restaurant.ambienceHighlights.map((highlight) => (
-                      <Chip key={highlight} label={highlight} />
-                    ))}
-                  </Stack>
+                  <Typography variant="h6">Cleanest ordering flow</Typography>
+                  <Typography variant="body2" color="text.secondary">
+                    Tap any card for details, or use the add button for instant ordering.
+                  </Typography>
+                  <Button
+                    variant="outlined"
+                    onClick={() => navigate(APP_ROUTES.cart(restaurantId, tableId, seatId))}
+                  >
+                    Review cart
+                  </Button>
                 </Stack>
               </CardContent>
             </Card>
 
             <Card>
-              <CardContent sx={{ p: 2.25 }}>
-                <Stack spacing={2}>
-                  <Stack direction="row" justifyContent="space-between" alignItems="center">
-                    <Typography variant="h5">Cart preview</Typography>
-                    <Chip icon={<BoltRoundedIcon />} label={`${itemCount} items`} color="primary" />
-                  </Stack>
-
-                  {cartItems.length === 0 ? (
-                    <Typography color="text.secondary">
-                      Add a few plates to unlock the fast checkout flow.
-                    </Typography>
-                  ) : (
-                    <Stack spacing={1.5}>
-                      {cartItems.slice(0, 2).map((item) => (
-                        <CartItemCard
-                          key={item.key}
-                          item={item}
-                          currency={currency}
-                          onIncrease={() => changeQuantity(item.key, 1)}
-                          onDecrease={() => changeQuantity(item.key, -1)}
-                          onRemove={removeItem}
-                        />
-                      ))}
-                      {cartItems.length > 2 ? (
-                        <Typography variant="body2" color="text.secondary">
-                          +{cartItems.length - 2} more item{cartItems.length - 2 > 1 ? "s" : ""}
-                        </Typography>
-                      ) : null}
-                    </Stack>
-                  )}
-
-                  <Paper
-                    sx={{
-                      p: 1.5,
-                      borderRadius: 4,
-                      background: "linear-gradient(135deg, rgba(42,29,25,0.95), rgba(112,128,96,0.95))",
-                      color: "#fff9f2"
-                    }}
+              <CardContent sx={{ p: 2.5 }}>
+                <Stack spacing={1.25}>
+                  <Typography variant="subtitle2" color="text.secondary">
+                    Basket total
+                  </Typography>
+                  <Typography variant="h4" sx={{ fontSize: 30 }}>
+                    {formatCurrency(summary.total, currency)}
+                  </Typography>
+                  <Typography variant="body2" color="text.secondary">
+                    {itemCount} item{itemCount === 1 ? "" : "s"} ready to checkout.
+                  </Typography>
+                  <Button
+                    variant="contained"
+                    fullWidth
+                    endIcon={<ArrowForwardRoundedIcon />}
+                    onClick={() => navigate(APP_ROUTES.cart(restaurantId, tableId, seatId))}
+                    disabled={!itemCount}
                   >
-                    <Stack spacing={0.5}>
-                      <Typography variant="body2" sx={{ color: "rgba(255,249,242,0.72)" }}>
-                        Running total
-                      </Typography>
-                      <Typography variant="h4">{formatCurrency(summary.total, currency)}</Typography>
-                    </Stack>
-                  </Paper>
-
-                    <Button
-                      variant="contained"
-                      size="large"
-                      endIcon={<ArrowForwardRoundedIcon />}
-                      disabled={cartItems.length === 0}
-                      onClick={() => navigate(APP_ROUTES.cart(restaurantId, tableId, seatId))}
-                    >
-                      View cart
-                    </Button>
+                    Go to cart
+                  </Button>
                 </Stack>
               </CardContent>
             </Card>
@@ -378,22 +418,17 @@ export function MenuPage() {
         item={selectedItem}
         currency={currency}
         onClose={() => setSelectedItem(null)}
-        onConfirm={(payload) => {
-          addToCart(createCartLine(payload));
-          setSelectedItem(null);
-        }}
+        onAdd={handleDialogAdd}
       />
 
-      {itemCount > 0 ? (
-        <StickyCartBar
-          itemCount={itemCount}
-          total={summary.total}
-          currency={currency}
-          label="Your table is ready for checkout"
-          actionLabel="View cart"
-          onAction={() => navigate(APP_ROUTES.cart(restaurantId, tableId, seatId))}
-        />
-      ) : null}
+      <StickyCartBar
+        itemCount={itemCount}
+        total={summary.total}
+        currency={currency}
+        label="Your cart is live"
+        actionLabel="Open cart"
+        onAction={() => navigate(APP_ROUTES.cart(restaurantId, tableId, seatId))}
+      />
     </CustomerLayout>
   );
 }

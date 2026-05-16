@@ -6,8 +6,8 @@ export function CustomerLayout({ children }) {
       sx={{
         minHeight: "100vh",
         position: "relative",
-        overflow: "hidden",
-        pb: { xs: 12, md: 6 }
+        overflowX: "clip",
+        pb: { xs: 16, md: 8 }
       }}
     >
       <Box
@@ -16,15 +16,15 @@ export function CustomerLayout({ children }) {
           inset: 0,
           pointerEvents: "none",
           background:
-            "radial-gradient(circle at 10% 10%, rgba(201, 135, 98, 0.18), transparent 18%), radial-gradient(circle at 88% 8%, rgba(118, 143, 103, 0.16), transparent 24%), radial-gradient(circle at 60% 86%, rgba(201, 135, 98, 0.12), transparent 18%)"
+            "radial-gradient(circle at 18% 8%, rgba(226, 55, 68, 0.08), transparent 24%), radial-gradient(circle at 82% 12%, rgba(255, 142, 110, 0.10), transparent 22%), radial-gradient(circle at 50% 92%, rgba(226, 55, 68, 0.05), transparent 26%)"
         }}
       />
       <Container
-        maxWidth="lg"
+        maxWidth="xl"
         sx={{
           position: "relative",
-          px: { xs: 2, sm: 3, md: 4 },
-          pt: { xs: 2, sm: 3, md: 4 }
+          px: { xs: 1.5, sm: 2.5, md: 3 },
+          pt: { xs: 1.5, sm: 2.5, md: 3 }
         }}
       >
         {children}

@@ -5,7 +5,7 @@ import { appTheme } from "../theme/index.js";
 export function AppProviders({ children }) {
   return (
     <ThemeProvider theme={appTheme}>
-      <CssBaseline />
+      <CssBaseline enableColorScheme />
       <OrderingProvider>{children}</OrderingProvider>
     </ThemeProvider>
   );

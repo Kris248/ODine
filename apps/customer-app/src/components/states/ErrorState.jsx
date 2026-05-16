@@ -1,35 +1,53 @@
-import ErrorOutlineRoundedIcon from "@mui/icons-material/ErrorOutlineRounded";
-import { Button, Card, CardContent, Stack, Typography } from "@mui/material";
+import RefreshRoundedIcon from "@mui/icons-material/RefreshRounded";
+import { Box, Button, Card, CardContent, Stack, Typography } from "@mui/material";
 
-export function ErrorState({ title, description, actionLabel, onAction }) {
+export function ErrorState({
+  title = "Something went wrong",
+  description = "We could not complete this request right now.",
+  actionLabel = "Try again",
+  onAction,
+  secondaryActionLabel,
+  onSecondaryAction,
+  icon
+}) {
   return (
-    <Card sx={{ p: { xs: 1, sm: 2 } }}>
-      <CardContent>
-        <Stack spacing={2} alignItems="center" textAlign="center" sx={{ py: { xs: 4, md: 6 } }}>
-          <Stack
-            alignItems="center"
-            justifyContent="center"
-            sx={{
-              width: 76,
-              height: 76,
-              borderRadius: "50%",
-              bgcolor: "rgba(155, 91, 61, 0.12)",
-              color: "primary.main"
-            }}
-          >
-            <ErrorOutlineRoundedIcon sx={{ fontSize: 38 }} />
+    <Box sx={{ display: "grid", placeItems: "center", minHeight: "68vh", py: 4 }}>
+      <Card sx={{ width: "100%", maxWidth: 740 }}>
+        <CardContent sx={{ p: { xs: 2.5, md: 4 } }}>
+          <Stack spacing={2.25} alignItems="center" textAlign="center">
+            <Box
+              sx={{
+                width: 72,
+                height: 72,
+                borderRadius: "50%",
+                bgcolor: "rgba(226, 55, 68, 0.10)",
+                display: "grid",
+                placeItems: "center"
+              }}
+            >
+              {icon || <RefreshRoundedIcon color="primary" />}
+            </Box>
+            <Stack spacing={0.5}>
+              <Typography variant="h5">{title}</Typography>
+              <Typography color="text.secondary" sx={{ maxWidth: 520 }}>
+                {description}
+              </Typography>
+            </Stack>
+            <Stack direction={{ xs: "column", sm: "row" }} spacing={1.25}>
+              {onAction ? (
+                <Button variant="contained" onClick={onAction} startIcon={<RefreshRoundedIcon />}>
+                  {actionLabel}
+                </Button>
+              ) : null}
+              {onSecondaryAction ? (
+                <Button variant="outlined" onClick={onSecondaryAction}>
+                  {secondaryActionLabel || "Go back"}
+                </Button>
+              ) : null}
+            </Stack>
           </Stack>
-          <Typography variant="h4">{title}</Typography>
-          <Typography color="text.secondary" sx={{ maxWidth: 480 }}>
-            {description}
-          </Typography>
-          {actionLabel ? (
-            <Button variant="contained" onClick={onAction}>
-              {actionLabel}
-            </Button>
-          ) : null}
-        </Stack>
-      </CardContent>
-    </Card>
+        </CardContent>
+      </Card>
+    </Box>
   );
 }

@@ -1,52 +1,74 @@
+import DeleteOutlineRoundedIcon from "@mui/icons-material/DeleteOutlineRounded";
 import AddRoundedIcon from "@mui/icons-material/AddRounded";
-import CloseRoundedIcon from "@mui/icons-material/CloseRounded";
 import RemoveRoundedIcon from "@mui/icons-material/RemoveRounded";
-import { Box, Card, CardContent, IconButton, Stack, Typography } from "@mui/material";
+import { Box, Button, Card, CardContent, Chip, IconButton, Stack, Typography } from "@mui/material";
 import { formatCurrency } from "../../../utils/formatters.js";
 
-export function CartItemCard({ item, currency, onIncrease, onDecrease, onRemove }) {
+function getSelectionLabel(entry) {
+  const groups = entry.selectedCustomizations || entry.modifiers || [];
+  if (!groups.length) return null;
+  return groups
+    .map((group) => `${group.groupLabel || group.groupId}: ${(group.options || []).map((option) => option.label || option.name).join(", ")}`)
+    .join(" • ");
+}
+
+export function CartItemCard({
+  item,
+  currency = "INR",
+  onIncrease,
+  onDecrease,
+  onRemove
+}) {
+  const selectionLabel = getSelectionLabel(item);
+
   return (
-    <Card>
-      <CardContent sx={{ p: 2 }}>
-        <Stack direction="row" spacing={2}>
+    <Card sx={{ overflow: "hidden" }}>
+      <CardContent sx={{ p: { xs: 1.5, sm: 2 } }}>
+        <Stack direction={{ xs: "column", sm: "row" }} spacing={1.75}>
           <Box
+            component="img"
+            src={item.image}
+            alt={item.name}
             sx={{
-              width: 96,
-              height: 96,
-              flexShrink: 0,
+              width: { xs: "100%", sm: 132 },
+              height: { xs: 182, sm: 132 },
               borderRadius: 4,
-              backgroundImage: `url(${item.image})`,
-              backgroundSize: "cover",
-              backgroundPosition: "center"
+              objectFit: "cover",
+              flexShrink: 0,
+              bgcolor: "rgba(226,55,68,0.06)"
             }}
           />
 
-          <Stack spacing={1.25} sx={{ flex: 1, minWidth: 0 }}>
-            <Stack direction="row" justifyContent="space-between" alignItems="start" spacing={1}>
-              <Box>
-                <Typography variant="h6">{item.name}</Typography>
-                <Typography variant="body2" color="text.secondary">
-                  {formatCurrency(item.unitPrice, currency)} each
+          <Stack spacing={1.1} sx={{ flex: 1, minWidth: 0 }}>
+            <Stack direction="row" justifyContent="space-between" alignItems="flex-start" spacing={1}>
+              <Box sx={{ minWidth: 0 }}>
+                <Typography variant="subtitle1" fontWeight={800} noWrap>
+                  {item.name}
+                </Typography>
+                <Typography variant="body2" color="text.secondary" sx={{ mt: 0.35 }}>
+                  {item.description}
                 </Typography>
               </Box>
+
               <IconButton
-                size="small"
-                onClick={() => onRemove(item.key)}
+                onClick={() => onRemove?.(item.key)}
                 aria-label={`Remove ${item.name}`}
+                sx={{ bgcolor: "rgba(17,24,39,0.04)" }}
               >
-                <CloseRoundedIcon fontSize="small" />
+                <DeleteOutlineRoundedIcon fontSize="small" />
               </IconButton>
             </Stack>
 
-            {item.selectedCustomizations?.length > 0 ? (
-              <Typography variant="body2" color="text.secondary">
-                {item.selectedCustomizations
-                  .map(
-                    (group) =>
-                      `${group.groupLabel}: ${group.options.map((option) => option.label).join(", ")}`
-                  )
-                  .join(" / ")}
-              </Typography>
+            {selectionLabel ? (
+              <Chip
+                label={selectionLabel}
+                variant="outlined"
+                sx={{
+                  alignSelf: "flex-start",
+                  maxWidth: "100%",
+                  "& .MuiChip-label": { whiteSpace: "normal" }
+                }}
+              />
             ) : null}
 
             {item.specialInstructions ? (
@@ -55,38 +77,40 @@ export function CartItemCard({ item, currency, onIncrease, onDecrease, onRemove 
               </Typography>
             ) : null}
 
-            <Stack direction="row" justifyContent="space-between" alignItems="center">
-              <Stack
-                direction="row"
-                spacing={1}
-                alignItems="center"
-                sx={{
-                  px: 1,
-                  py: 0.5,
-                  borderRadius: 99,
-                  bgcolor: "rgba(155, 91, 61, 0.08)"
-                }}
-              >
-                <IconButton
-                  size="small"
-                  onClick={() => onDecrease(item.key)}
-                  aria-label="Decrease quantity"
+            <Stack
+              direction={{ xs: "column", sm: "row" }}
+              spacing={1.25}
+              justifyContent="space-between"
+              alignItems={{ xs: "stretch", sm: "center" }}
+              sx={{ mt: "auto" }}
+            >
+              <Stack direction="row" spacing={1}>
+                <Button
+                  variant="outlined"
+                  onClick={onDecrease}
+                  startIcon={<RemoveRoundedIcon />}
+                  sx={{ minWidth: 108 }}
                 >
-                  <RemoveRoundedIcon fontSize="small" />
-                </IconButton>
-                <Typography fontWeight={700}>{item.quantity}</Typography>
-                <IconButton
-                  size="small"
-                  onClick={() => onIncrease(item.key)}
-                  aria-label="Increase quantity"
+                  {item.quantity}
+                </Button>
+                <Button
+                  variant="outlined"
+                  onClick={onIncrease}
+                  startIcon={<AddRoundedIcon />}
+                  sx={{ minWidth: 108 }}
                 >
-                  <AddRoundedIcon fontSize="small" />
-                </IconButton>
+                  Add
+                </Button>
               </Stack>
 
-              <Typography variant="h6">
-                {formatCurrency(item.unitPrice * item.quantity, currency)}
-              </Typography>
+              <Stack alignItems={{ xs: "flex-start", sm: "flex-end" }}>
+                <Typography variant="caption" color="text.secondary">
+                  Line total
+                </Typography>
+                <Typography variant="h6" color="primary.main">
+                  {formatCurrency(item.unitPrice * item.quantity, currency)}
+                </Typography>
+              </Stack>
             </Stack>
           </Stack>
         </Stack>

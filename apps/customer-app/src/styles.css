@@ -16,14 +16,11 @@ html,
 body,
 #root {
   min-height: 100%;
+  margin: 0;
 }
 
 body {
-  margin: 0;
-  background:
-    radial-gradient(circle at top left, rgba(203, 148, 99, 0.22), transparent 28%),
-    radial-gradient(circle at right 15%, rgba(126, 152, 108, 0.18), transparent 30%),
-    linear-gradient(180deg, #fcf8f3 0%, #f6efe8 48%, #f3eadf 100%);
+  overflow-x: hidden;
 }
 
 a {
@@ -32,8 +29,15 @@ a {
 }
 
 img {
-  max-width: 100%;
   display: block;
+  max-width: 100%;
+}
+
+button,
+input,
+textarea,
+select {
+  font: inherit;
 }
 
 ::-webkit-scrollbar {
@@ -42,7 +46,7 @@ img {
 }
 
 ::-webkit-scrollbar-thumb {
-  background: rgba(155, 91, 61, 0.22);
+  background: rgba(226, 55, 68, 0.26);
   border-radius: 999px;
 }
 

@@ -1,6 +1,6 @@
 import ArrowForwardRoundedIcon from "@mui/icons-material/ArrowForwardRounded";
 import PersonOutlineRoundedIcon from "@mui/icons-material/PersonOutlineRounded";
-import { Button, Card, CardContent, Stack, TextField, Typography } from "@mui/material";
+import { Box, Button, Card, CardContent, Stack, TextField, Typography } from "@mui/material";
 import { useEffect } from "react";
 import { useNavigate, useParams, useSearchParams } from "react-router-dom";
 import { AppHeader } from "../components/common/AppHeader.jsx";
@@ -112,62 +112,87 @@ export function CheckoutPage() {
         onBack={() => navigate(-1)}
       />
 
-      <Stack
-        spacing={3}
+      <Box
         sx={{
           display: "grid",
-          gap: 3,
-          gridTemplateColumns: { xs: "1fr", lg: "minmax(0, 1fr) 340px" },
+          gap: 2.5,
+          gridTemplateColumns: { xs: "1fr", xl: "minmax(0, 1fr) 360px" },
           alignItems: "start"
         }}
       >
-        <Card>
-          <CardContent sx={{ p: 2.25 }}>
-            <Stack spacing={2}>
-              <Typography variant="h5">Guest details</Typography>
-              <Typography color="text.secondary">
-                Keep this light. We only need enough to make handoff and support easy.
-              </Typography>
-              <TextField
-                label="Your name"
-                placeholder="Aarav"
-                value={guestDetails.name}
-                onChange={(event) => setGuestDetails({ name: event.target.value })}
-              />
-              <TextField
-                label="Phone number"
-                placeholder="+91 98XXXXXX12"
-                value={guestDetails.phone}
-                onChange={(event) => setGuestDetails({ phone: event.target.value })}
-              />
-              <TextField
-                label="Dining note"
-                value={orderNote}
-                placeholder="Optional note for this table"
-                disabled
-                helperText="Edit this on the cart screen if you want to update the kitchen note."
-              />
-            </Stack>
-          </CardContent>
-        </Card>
+        <Stack spacing={2.25}>
+          <Card>
+            <CardContent sx={{ p: 2.5 }}>
+              <Stack spacing={1.8}>
+                <Typography variant="h6">Guest details</Typography>
+                <Typography color="text.secondary">
+                  Keep this light. We only need enough to make handoff and support easy.
+                </Typography>
+                <TextField
+                  label="Your name"
+                  placeholder="Aarav"
+                  value={guestDetails.name}
+                  onChange={(event) => setGuestDetails({ name: event.target.value })}
+                />
+                <TextField
+                  label="Phone number"
+                  placeholder="+91 98XXXXXX12"
+                  value={guestDetails.phone}
+                  onChange={(event) => setGuestDetails({ phone: event.target.value })}
+                />
+                <TextField
+                  label="Dining note"
+                  value={orderNote}
+                  placeholder="Optional note for this table"
+                  disabled
+                  helperText="Edit this on the cart screen if you want to update the kitchen note."
+                />
+              </Stack>
+            </CardContent>
+          </Card>
 
-        <Stack spacing={2} sx={{ position: "sticky", top: 18 }}>
+          <Card>
+            <CardContent sx={{ p: 2.5 }}>
+              <Stack spacing={1.25}>
+                <Typography variant="h6">What happens next</Typography>
+                <Typography variant="body2" color="text.secondary">
+                  Review payment on the next screen, then confirm to generate the live kitchen handoff.
+                </Typography>
+              </Stack>
+            </CardContent>
+          </Card>
+        </Stack>
+
+        <Stack spacing={2.25} sx={{ position: { xl: "sticky" }, top: { xl: 16 } }}>
           <OrderSummaryCard
             cartItems={cartItems}
             summary={summary}
             currency={pricing.currency}
             title="Review before payment"
+            subtitle="Confirm the guest and order details"
           />
-          <Button
-            variant="contained"
-            size="large"
-            endIcon={<ArrowForwardRoundedIcon />}
-            onClick={() => navigate(APP_ROUTES.payment(restaurantId, tableId, seatId))}
-          >
-            Select payment
-          </Button>
+          <Card>
+            <CardContent sx={{ p: 2.5 }}>
+              <Stack spacing={1.5}>
+                <Button
+                  variant="outlined"
+                  onClick={() => navigate(APP_ROUTES.cart(restaurantId, tableId, seatId))}
+                >
+                  Back to cart
+                </Button>
+                <Button
+                  variant="contained"
+                  size="large"
+                  endIcon={<ArrowForwardRoundedIcon />}
+                  onClick={() => navigate(APP_ROUTES.payment(restaurantId, tableId, seatId))}
+                >
+                  Select payment
+                </Button>
+              </Stack>
+            </CardContent>
+          </Card>
         </Stack>
-      </Stack>
+      </Box>
 
       <StickyCartBar
         itemCount={itemCount}

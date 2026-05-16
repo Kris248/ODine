@@ -1,43 +1,41 @@
-import { Box, Chip, FormControl, InputLabel, MenuItem, Select, Stack } from "@mui/material";
+import { Box, Chip, Stack, Typography } from "@mui/material";
+import RestaurantRoundedIcon from "@mui/icons-material/RestaurantRounded";
+import LocalFireDepartmentRoundedIcon from "@mui/icons-material/LocalFireDepartmentRounded";
 
-export function CategoryTabs({ categories, activeCategoryId, onSelectCategory }) {
+export function CategoryTabs({ categories = [], activeCategoryId = "", onSelectCategory }) {
   return (
-    <Stack spacing={1}>
-      <Box sx={{ display: { xs: "block", md: "none" } }}>
-        <FormControl fullWidth size="small">
-          <InputLabel>Menu section</InputLabel>
-          <Select
-            value={activeCategoryId}
-            label="Menu section"
-            onChange={(event) => onSelectCategory(event.target.value)}
-          >
-            <MenuItem value="">All dishes</MenuItem>
-            {categories.map((category) => (
-              <MenuItem key={category.id} value={category.id}>
-                {category.name}
-              </MenuItem>
-            ))}
-          </Select>
-        </FormControl>
-      </Box>
-
-      <Stack direction="row" spacing={1} sx={{ overflowX: "auto", pb: 0.5, display: { xs: "none", md: "flex" } }}>
+    <Stack spacing={1.1}>
+      <Typography variant="subtitle2" color="text.secondary">
+        Browse by category
+      </Typography>
+      <Box
+        sx={{
+          display: "flex",
+          gap: 1,
+          overflowX: "auto",
+          pb: 0.5,
+          "&::-webkit-scrollbar": { height: 8 }
+        }}
+      >
         <Chip
           label="All dishes"
-          clickable
+          icon={<RestaurantRoundedIcon />}
           color={!activeCategoryId ? "primary" : "default"}
           onClick={() => onSelectCategory("")}
+          sx={{ flexShrink: 0 }}
         />
         {categories.map((category) => (
           <Chip
             key={category.id}
             label={category.name}
-            clickable
+            icon={category.featured ? <LocalFireDepartmentRoundedIcon /> : undefined}
+            variant={activeCategoryId === category.id ? "filled" : "outlined"}
             color={activeCategoryId === category.id ? "primary" : "default"}
             onClick={() => onSelectCategory(category.id)}
+            sx={{ flexShrink: 0 }}
           />
         ))}
-      </Stack>
+      </Box>
     </Stack>
   );
 }
