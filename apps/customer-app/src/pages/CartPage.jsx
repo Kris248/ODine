@@ -11,6 +11,7 @@ import { APP_ROUTES } from "../constants/routes.js";
 import { CartItemCard } from "../features/cart/components/CartItemCard.jsx";
 import { StickyCartBar } from "../features/cart/components/StickyCartBar.jsx";
 import { OrderSummaryCard } from "../features/checkout/components/OrderSummaryCard.jsx";
+import { LiveOrderBanner } from "../features/orders/components/LiveOrderBanner.jsx";
 import { useRestaurantExperience } from "../hooks/useRestaurantExperience.js";
 import { CustomerLayout } from "../layouts/CustomerLayout.jsx";
 import { useOrdering } from "../store/OrderingContext.jsx";
@@ -32,7 +33,8 @@ export function CartPage() {
     hydrateRestaurant,
     changeQuantity,
     removeItem,
-    setOrderNote
+    setOrderNote,
+    lastOrder
   } = useOrdering();
 
   const shouldLoad =
@@ -48,10 +50,7 @@ export function CartPage() {
   );
 
   useEffect(() => {
-    if (!data) {
-      return;
-    }
-
+    if (!data) return;
     hydrateRestaurant({
       session: data.session,
       restaurant: data.restaurant,
@@ -94,6 +93,17 @@ export function CartPage() {
           tableLabel={resolvedTable?.label}
           onBack={() => navigate(-1)}
         />
+        {lastOrder ? (
+          <LiveOrderBanner
+            order={lastOrder}
+            restaurantId={restaurantId}
+            tableId={tableId}
+            seatId={seatId}
+            onOpenTracking={() =>
+              navigate(APP_ROUTES.tracking(restaurantId, tableId, lastOrder.id, seatId))
+            }
+          />
+        ) : null}
         <EmptyState
           title="Your cart is still empty"
           description="Browse the menu and add a few dishes to continue with checkout."
@@ -109,15 +119,30 @@ export function CartPage() {
     <CustomerLayout>
       <AppHeader
         title="Your cart"
-        subtitle={`${resolvedRestaurant?.name || "Restaurant"} / ready for a quick review`}
+        subtitle={`${resolvedRestaurant?.name || "Restaurant"} · ready for review`}
         tableLabel={resolvedTable?.label}
         onBack={() => navigate(-1)}
       />
 
+      {lastOrder ? (
+        <Box sx={{ mb: 2.25 }}>
+          <LiveOrderBanner
+            order={lastOrder}
+            restaurantId={restaurantId}
+            tableId={tableId}
+            seatId={seatId}
+            dense
+            onOpenTracking={() =>
+              navigate(APP_ROUTES.tracking(restaurantId, tableId, lastOrder.id, seatId))
+            }
+          />
+        </Box>
+      ) : null}
+
       <Box
         sx={{
           display: "grid",
-          gap: 2.5,
+          gap: 2.25,
           gridTemplateColumns: { xs: "1fr", xl: "minmax(0, 1fr) 360px" },
           alignItems: "start"
         }}
@@ -135,8 +160,8 @@ export function CartPage() {
           ))}
 
           <Card>
-            <CardContent sx={{ p: 2.5 }}>
-              <Stack spacing={1.5}>
+            <CardContent sx={{ p: { xs: 2, md: 2.5 } }}>
+              <Stack spacing={1.4}>
                 <Typography variant="h6">Special instructions</Typography>
                 <Typography color="text.secondary">
                   Add one note for the kitchen if you want the whole order handled a certain way.
@@ -163,8 +188,8 @@ export function CartPage() {
           />
 
           <Card>
-            <CardContent sx={{ p: 2.5 }}>
-              <Stack spacing={1.5}>
+            <CardContent sx={{ p: 2.25 }}>
+              <Stack spacing={1.2}>
                 <Button
                   variant="outlined"
                   onClick={() => navigate(APP_ROUTES.home(restaurantId, tableId, seatId))}

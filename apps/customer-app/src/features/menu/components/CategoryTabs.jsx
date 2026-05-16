@@ -1,19 +1,19 @@
-import { Box, Chip, Stack, Typography } from "@mui/material";
-import RestaurantRoundedIcon from "@mui/icons-material/RestaurantRounded";
 import LocalFireDepartmentRoundedIcon from "@mui/icons-material/LocalFireDepartmentRounded";
+import RestaurantRoundedIcon from "@mui/icons-material/RestaurantRounded";
+import { Box, Chip, Stack, Typography } from "@mui/material";
 
 export function CategoryTabs({ categories = [], activeCategoryId = "", onSelectCategory }) {
   return (
-    <Stack spacing={1.1}>
+    <Stack spacing={1}>
       <Typography variant="subtitle2" color="text.secondary">
-        Browse by category
+        Quick categories
       </Typography>
       <Box
         sx={{
           display: "flex",
           gap: 1,
           overflowX: "auto",
-          pb: 0.5,
+          pb: 0.25,
           "&::-webkit-scrollbar": { height: 8 }
         }}
       >

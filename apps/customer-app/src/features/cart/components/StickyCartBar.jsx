@@ -13,9 +13,7 @@ export function StickyCartBar({
 }) {
   const theme = useTheme();
 
-  if (!itemCount) {
-    return null;
-  }
+  if (!itemCount) return null;
 
   return (
     <Box
@@ -27,7 +25,7 @@ export function StickyCartBar({
         top: { md: 16 },
         zIndex: 25,
         width: { xs: "calc(100vw - 24px)", md: "100%" },
-        maxWidth: { md: 540 },
+        maxWidth: { md: 560 },
         ml: { md: "auto" }
       }}
     >
@@ -36,43 +34,37 @@ export function StickyCartBar({
         sx={{
           px: { xs: 1.5, sm: 2 },
           py: 1.25,
-          borderRadius: 5,
-          bgcolor: "rgba(255,255,255,0.92)",
+          borderRadius: 4,
+          bgcolor: "rgba(255,255,255,0.96)",
           backdropFilter: "blur(16px)",
           border: `1px solid ${theme.palette.divider}`
         }}
       >
-        <Stack direction="row" alignItems="center" justifyContent="space-between" spacing={1.5}>
-          <Stack direction="row" spacing={1.2} alignItems="center" sx={{ minWidth: 0 }}>
-            <Box
-              sx={{
-                width: 44,
-                height: 44,
-                borderRadius: "50%",
-                bgcolor: "rgba(226,55,68,0.10)",
-                display: "grid",
-                placeItems: "center",
-                flexShrink: 0
-              }}
-            >
-              <ShoppingBagRoundedIcon color="primary" />
-            </Box>
-            <Box sx={{ minWidth: 0 }}>
-              <Typography variant="subtitle2" noWrap>
-                {label}
-              </Typography>
-              <Typography variant="body2" color="text.secondary" noWrap>
-                {itemCount} item{itemCount === 1 ? "" : "s"} • {formatCurrency(total, currency)}
-              </Typography>
-            </Box>
+        <Stack direction="row" spacing={1.5} alignItems="center">
+          <Stack
+            alignItems="center"
+            justifyContent="center"
+            sx={{
+              width: 40,
+              height: 40,
+              borderRadius: 3,
+              bgcolor: "rgba(15,118,110,0.08)",
+              flexShrink: 0
+            }}
+          >
+            <ShoppingBagRoundedIcon color="primary" fontSize="small" />
           </Stack>
 
-          <Button
-            variant="contained"
-            endIcon={<ArrowForwardRoundedIcon />}
-            onClick={onAction}
-            sx={{ whiteSpace: "nowrap" }}
-          >
+          <Stack spacing={0.15} sx={{ minWidth: 0, flex: 1 }}>
+            <Typography variant="subtitle1" fontWeight={850} noWrap>
+              {label}
+            </Typography>
+            <Typography variant="body2" color="text.secondary" noWrap>
+              {itemCount} item{itemCount === 1 ? "" : "s"} · {formatCurrency(total, currency)}
+            </Typography>
+          </Stack>
+
+          <Button variant="contained" endIcon={<ArrowForwardRoundedIcon />} onClick={onAction}>
             {actionLabel}
           </Button>
         </Stack>

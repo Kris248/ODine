@@ -35,74 +35,67 @@ export function OrderSummaryCard({
 
   return (
     <Card sx={{ overflow: "hidden" }}>
-      <CardContent sx={{ p: { xs: 2, sm: 2.5 } }}>
+      <CardContent sx={{ p: { xs: 2, md: 2.5 } }}>
         <Stack spacing={2}>
           <Stack direction="row" spacing={1.2} alignItems="center">
             <Box
               sx={{
                 width: 42,
                 height: 42,
-                borderRadius: "50%",
-                bgcolor: "rgba(226,55,68,0.10)",
+                borderRadius: 3,
                 display: "grid",
-                placeItems: "center"
+                placeItems: "center",
+                bgcolor: "rgba(15,118,110,0.08)"
               }}
             >
-              <ReceiptLongRoundedIcon color="primary" fontSize="small" />
+              <ReceiptLongRoundedIcon color="primary" />
             </Box>
-            <Box>
-              <Typography variant="h6" sx={{ lineHeight: 1.1 }}>
-                {title}
-              </Typography>
+            <Stack spacing={0.2}>
+              <Typography variant="h6">{title}</Typography>
               {subtitle ? (
                 <Typography variant="body2" color="text.secondary">
                   {subtitle}
                 </Typography>
               ) : null}
+            </Stack>
+          </Stack>
+
+          <Divider />
+
+          <Stack spacing={1.2}>
+            {visibleItems.map((item) => (
+              <LineRow
+                key={item.key || item.itemId || getLineName(item)}
+                label={`${item.quantity || 1} × ${getLineName(item)}`}
+                value={formatCurrency(getLineTotal(item), currency)}
+              />
+            ))}
+            {hiddenCount > 0 ? (
+              <Typography variant="body2" color="text.secondary">
+                +{hiddenCount} more item{hiddenCount === 1 ? "" : "s"}
+              </Typography>
+            ) : null}
+          </Stack>
+
+          <Divider />
+
+          <Stack spacing={1}>
+            <LineRow label="Subtotal" value={formatCurrency(summary.subtotal || 0, currency)} />
+            <LineRow label={`Tax (${Math.round((summary.taxRate || 0) * 100)}%)`} value={formatCurrency(summary.taxes || 0, currency)} />
+            {summary.serviceFee ? (
+              <LineRow label="Service fee" value={formatCurrency(summary.serviceFee || 0, currency)} />
+            ) : null}
+            <Box
+              sx={{
+                mt: 0.5,
+                p: 1.4,
+                borderRadius: 3,
+                bgcolor: "rgba(15,118,110,0.06)"
+              }}
+            >
+              <LineRow emphasized label="Total" value={formatCurrency(summary.total || 0, currency)} />
             </Box>
           </Stack>
-
-          {visibleItems.length ? (
-            <Stack spacing={1.2}>
-              {visibleItems.map((item) => (
-                <Stack key={item.key || `${item.name}-${item.quantity}`} spacing={0.25}>
-                  <Stack direction="row" justifyContent="space-between" spacing={1}>
-                    <Typography variant="body2" fontWeight={700} noWrap>
-                      {getLineName(item)} × {item.quantity || 1}
-                    </Typography>
-                    <Typography variant="body2" fontWeight={700}>
-                      {formatCurrency(getLineTotal(item), currency)}
-                    </Typography>
-                  </Stack>
-                  {item.specialInstructions ? (
-                    <Typography variant="caption" color="text.secondary">
-                      {item.specialInstructions}
-                    </Typography>
-                  ) : null}
-                </Stack>
-              ))}
-              {hiddenCount > 0 ? (
-                <Typography variant="caption" color="text.secondary">
-                  +{hiddenCount} more item{hiddenCount > 1 ? "s" : ""}
-                </Typography>
-              ) : null}
-            </Stack>
-          ) : null}
-
-          <Divider />
-
-          <Stack spacing={1.05}>
-            <LineRow label="Subtotal" value={formatCurrency(summary.subtotal || 0, currency)} />
-            <LineRow
-              label={`Taxes (${Math.round((summary.taxRate || 0) * 100)}%)`}
-              value={formatCurrency(summary.taxes || 0, currency)}
-            />
-            <LineRow label="Service fee" value={formatCurrency(summary.serviceFee || 0, currency)} />
-          </Stack>
-
-          <Divider />
-
-          <LineRow label="Total" value={formatCurrency(summary.total || 0, currency)} emphasized />
         </Stack>
       </CardContent>
     </Card>

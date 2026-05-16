@@ -21,20 +21,43 @@ const defaultState = {
   },
   selectedPaymentMethodId: "upi",
   activeCheckoutSession: null,
-  lastOrder: null
+  lastOrder: null,
+  orderHistory: []
 };
 
 function loadInitialState() {
-  if (typeof window === "undefined") {
-    return defaultState;
-  }
+  if (typeof window === "undefined") return defaultState;
 
   try {
     const stored = window.localStorage.getItem(STORAGE_KEY);
-    return stored ? { ...defaultState, ...JSON.parse(stored) } : defaultState;
+    if (!stored) return defaultState;
+    const parsed = JSON.parse(stored);
+    return {
+      ...defaultState,
+      ...parsed,
+      guestDetails: {
+        ...defaultState.guestDetails,
+        ...(parsed.guestDetails || {})
+      },
+      pricing: {
+        ...defaultState.pricing,
+        ...(parsed.pricing || {})
+      },
+      orderHistory: Array.isArray(parsed.orderHistory) ? parsed.orderHistory : []
+    };
   } catch {
     return defaultState;
   }
+}
+
+function addToHistory(history, order) {
+  if (!order?.id) return history;
+  const entry = {
+    ...order,
+    orderHistoryUpdatedAt: new Date().toISOString()
+  };
+  const next = [entry, ...history.filter((item) => item.id !== order.id)];
+  return next.slice(0, 8);
 }
 
 function orderingReducer(state, action) {
@@ -54,7 +77,6 @@ function orderingReducer(state, action) {
       };
     case "add_to_cart": {
       const existing = state.cartItems.find((entry) => entry.key === action.payload.key);
-
       return {
         ...state,
         activeCheckoutSession: null,
@@ -64,8 +86,7 @@ function orderingReducer(state, action) {
                 ? {
                     ...entry,
                     quantity: entry.quantity + action.payload.quantity,
-                    specialInstructions:
-                      entry.specialInstructions || action.payload.specialInstructions
+                    specialInstructions: entry.specialInstructions || action.payload.specialInstructions
                   }
                 : entry
             )
@@ -119,8 +140,22 @@ function orderingReducer(state, action) {
     case "set_last_order":
       return {
         ...state,
-        lastOrder: action.payload
+        lastOrder: action.payload,
+        orderHistory: addToHistory(state.orderHistory, action.payload)
       };
+    case "sync_order_update": {
+      const updatedOrder = action.payload;
+      return {
+        ...state,
+        lastOrder:
+          state.lastOrder?.id === updatedOrder?.id
+            ? updatedOrder
+            : state.lastOrder,
+        orderHistory: updatedOrder?.id
+          ? addToHistory(state.orderHistory, updatedOrder)
+          : state.orderHistory
+      };
+    }
     case "clear_checkout":
       return {
         ...state,
@@ -140,6 +175,7 @@ export function OrderingProvider({ children }) {
   const [state, dispatch] = useReducer(orderingReducer, defaultState, loadInitialState);
 
   useEffect(() => {
+    if (typeof window === "undefined") return;
     window.localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
   }, [state]);
 
@@ -168,6 +204,7 @@ export function OrderingProvider({ children }) {
       setActiveCheckoutSession: (payload) =>
         dispatch({ type: "set_active_checkout_session", payload }),
       setLastOrder: (payload) => dispatch({ type: "set_last_order", payload }),
+      syncOrderUpdate: (payload) => dispatch({ type: "sync_order_update", payload }),
       clearCheckout: () => dispatch({ type: "clear_checkout" })
     }),
     [itemCount, state, summary]

@@ -10,7 +10,7 @@ export function MenuItemCard({ item, currency = "INR", onOpen, onQuickAdd }) {
   const tags = [
     formatDietaryLabel(item.dietaryType),
     item.spiceLevel ? formatSpiceLabel(item.spiceLevel) : null,
-    item.bestseller ? "Bestseller" : null
+    item.bestseller ? "Chef favourite" : null
   ].filter(Boolean);
 
   return (
@@ -23,7 +23,7 @@ export function MenuItemCard({ item, currency = "INR", onOpen, onQuickAdd }) {
         transition: "transform 0.18s ease, box-shadow 0.18s ease",
         "&:hover": {
           transform: { xs: "none", md: "translateY(-2px)" },
-          boxShadow: "0 18px 40px rgba(17, 24, 39, 0.09)"
+          boxShadow: "0 18px 36px rgba(24,34,48,0.08)"
         }
       }}
     >
@@ -34,88 +34,80 @@ export function MenuItemCard({ item, currency = "INR", onOpen, onQuickAdd }) {
           alt={item.name}
           sx={{
             width: "100%",
-            aspectRatio: "4 / 3",
+            aspectRatio: "1.08 / 1",
             objectFit: "cover",
-            backgroundColor: "rgba(226,55,68,0.06)"
+            backgroundColor: "rgba(15,118,110,0.04)"
           }}
         />
-        <Stack
-          direction="row"
-          spacing={0.75}
-          useFlexGap
-          flexWrap="wrap"
-          sx={{ position: "absolute", left: 12, top: 12, right: 12 }}
-        >
-          {item.bestseller ? (
-            <Chip
-              icon={<LocalFireDepartmentRoundedIcon sx={{ fontSize: 16 }} />}
-              label="Top pick"
-              size="small"
-              sx={{ bgcolor: "rgba(255,255,255,0.94)" }}
-            />
-          ) : null}
-          <Chip
-            label={formatDietaryLabel(item.dietaryType)}
-            size="small"
-            sx={{ bgcolor: "rgba(255,255,255,0.94)" }}
-          />
-        </Stack>
-        <IconButton
-          onClick={(event) => {
-            event.stopPropagation();
-            onQuickAdd?.();
-          }}
-          aria-label={`Add ${item.name}`}
+        <Chip
+          size="small"
+          label={formatDietaryLabel(item.dietaryType)}
           sx={{
             position: "absolute",
-            right: 12,
-            bottom: 12,
-            bgcolor: "rgba(255,255,255,0.95)",
-            boxShadow: "0 10px 26px rgba(17,24,39,0.12)",
-            "&:hover": { bgcolor: "#fff" }
+            top: 12,
+            left: 12,
+            bgcolor: "rgba(255,255,255,0.92)",
+            border: "1px solid rgba(255,255,255,0.7)"
           }}
-        >
-          <AddRoundedIcon />
-        </IconButton>
+        />
       </Box>
 
-      <CardContent sx={{ p: 2 }}>
-        <Stack spacing={1.25}>
-          <Stack spacing={0.5}>
-            <Typography variant="subtitle1" fontWeight={800} sx={{ lineHeight: 1.15 }}>
-              {item.name}
-            </Typography>
-            <Typography variant="body2" color="text.secondary" sx={{ minHeight: 38 }}>
-              {item.description}
-            </Typography>
-          </Stack>
-
-          <Stack direction="row" spacing={0.75} useFlexGap flexWrap="wrap">
-            {tags.map((tag) => (
-              <Chip key={tag} label={tag} size="small" variant="outlined" />
-            ))}
-          </Stack>
-
-          <Stack direction="row" justifyContent="space-between" alignItems="center" spacing={1}>
-            <Box>
-              <Typography variant="caption" color="text.secondary">
-                Starting at
+      <CardContent sx={{ p: 1.75 }}>
+        <Stack spacing={1.1}>
+          <Stack direction="row" justifyContent="space-between" alignItems="flex-start" spacing={1.25}>
+            <Stack spacing={0.35} sx={{ minWidth: 0, flex: 1 }}>
+              <Typography variant="subtitle1" fontWeight={850} noWrap>
+                {item.name}
               </Typography>
-              <Typography variant="h6" color="primary.main" sx={{ lineHeight: 1.1 }}>
-                {formatCurrency(item.price, currency)}
+              <Typography variant="body2" color="text.secondary" sx={{ lineHeight: 1.5 }} noWrap={false}>
+                {item.description}
               </Typography>
-            </Box>
-            <Button
-              variant="contained"
+            </Stack>
+            <IconButton
               size="small"
-              startIcon={<RestaurantRoundedIcon />}
               onClick={(event) => {
                 event.stopPropagation();
                 onQuickAdd?.();
               }}
-              sx={{ minWidth: 110 }}
+              sx={{
+                bgcolor: "rgba(15,118,110,0.08)",
+                border: "1px solid rgba(15,118,110,0.12)"
+              }}
+              aria-label={`Add ${item.name}`}
             >
-              Add
+              <AddRoundedIcon fontSize="small" />
+            </IconButton>
+          </Stack>
+
+          <Stack direction="row" spacing={0.75} useFlexGap flexWrap="wrap">
+            {tags.slice(0, 2).map((tag) => (
+              <Chip key={tag} label={tag} size="small" variant="outlined" />
+            ))}
+            {item.bestseller ? (
+              <Chip
+                icon={<LocalFireDepartmentRoundedIcon sx={{ fontSize: 16 }} />}
+                label="Popular"
+                size="small"
+                color="secondary"
+                variant="outlined"
+              />
+            ) : null}
+          </Stack>
+
+          <Stack direction="row" alignItems="center" justifyContent="space-between" spacing={1.5}>
+            <Typography variant="h6" sx={{ fontSize: 20 }}>
+              {formatCurrency(item.price, currency)}
+            </Typography>
+            <Button
+              size="small"
+              variant="outlined"
+              startIcon={<RestaurantRoundedIcon />}
+              onClick={(event) => {
+                event.stopPropagation();
+                onOpen?.();
+              }}
+            >
+              Details
             </Button>
           </Stack>
         </Stack>

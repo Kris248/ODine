@@ -29,6 +29,7 @@ import { CustomerLayout } from "../layouts/CustomerLayout.jsx";
 import { useOrdering } from "../store/OrderingContext.jsx";
 import { createCartLine } from "../utils/cart.js";
 import { formatCurrency } from "../utils/formatters.js";
+import { LiveOrderBanner } from "../features/orders/components/LiveOrderBanner.jsx";
 
 export function MenuPage() {
   const { restaurantId, tableId } = useParams();
@@ -41,9 +42,9 @@ export function MenuPage() {
     summary,
     hydrateRestaurant,
     addToCart,
-    cartItems,
     restaurant,
-    table
+    table,
+    lastOrder
   } = useOrdering();
 
   const [activeCategoryId, setActiveCategoryId] = useState("");
@@ -53,7 +54,6 @@ export function MenuPage() {
 
   useEffect(() => {
     if (!data) return;
-
     hydrateRestaurant({
       session: data.session,
       restaurant: data.restaurant,
@@ -65,7 +65,6 @@ export function MenuPage() {
 
   const sections = useMemo(() => {
     if (!data) return [];
-
     const query = deferredSearch.trim().toLowerCase();
 
     return data.categories
@@ -106,6 +105,7 @@ export function MenuPage() {
 
   const currency = data.pricing.currency;
   const featuredCategories = data.categories.filter((category) => category.featured);
+  const activeSection = activeCategoryId ? sections.find((section) => section.id === activeCategoryId) : null;
 
   function handleQuickAdd(item) {
     addToCart(
@@ -130,64 +130,71 @@ export function MenuPage() {
     setSelectedItem(null);
   }
 
-  const activeSection = activeCategoryId ? sections.find((section) => section.id === activeCategoryId) : null;
-
   return (
-    <>
     <CustomerLayout>
-      <Stack spacing={2.5}>
+      <Stack spacing={2.25}>
         <Stack
           direction={{ xs: "column", lg: "row" }}
-          spacing={2.5}
+          spacing={2.25}
           alignItems="flex-start"
         >
           <Box sx={{ flex: 1, minWidth: 0 }}>
             <RestaurantHero restaurant={data.restaurant} tableLabel={data.table.label} />
           </Box>
 
-          <Card
-            sx={{
-              width: { xs: "100%", lg: 360 },
-              position: { lg: "sticky" },
-              top: { lg: 16 }
-            }}
-          >
-            <CardContent sx={{ p: 2.5 }}>
-              <Stack spacing={2}>
-                <Stack spacing={0.4}>
-                  <Typography variant="subtitle2" color="text.secondary">
-                    Table status
-                  </Typography>
-                  <Typography variant="h6">Fast, tableside browsing</Typography>
-                  <Typography variant="body2" color="text.secondary">
-                    Search dishes, open details, and add to cart with one tap.
-                  </Typography>
-                </Stack>
+          <Stack spacing={2.25} sx={{ width: { xs: "100%", lg: 360 }, position: { lg: "sticky" }, top: { lg: 16 } }}>
+            <Card>
+              <CardContent sx={{ p: 2.25 }}>
+                <Stack spacing={1.5}>
+                  <Stack spacing={0.35}>
+                    <Typography variant="subtitle2" color="text.secondary">
+                      Table session
+                    </Typography>
+                    <Typography variant="h6">Quick, clean ordering</Typography>
+                    <Typography variant="body2" color="text.secondary">
+                      Browse dishes, open details, and add everything without losing the table context.
+                    </Typography>
+                  </Stack>
 
-                <Divider />
+                  <Divider />
 
-                <Stack spacing={1.2}>
-                  <Typography variant="subtitle2" color="text.secondary">
-                    Live cart
-                  </Typography>
-                  <Typography variant="body1" fontWeight={800}>
-                    {itemCount} item{itemCount === 1 ? "" : "s"}
-                  </Typography>
-                  <Typography variant="body2" color="text.secondary">
-                    {formatCurrency(summary.total, currency)} total
-                  </Typography>
-                  <Button
-                    variant="contained"
-                    endIcon={<ShoppingBagRoundedIcon />}
-                    onClick={() => navigate(APP_ROUTES.cart(restaurantId, tableId, seatId))}
-                    disabled={!itemCount}
-                  >
-                    Open cart
-                  </Button>
+                  <Stack spacing={1.2}>
+                    <Typography variant="subtitle2" color="text.secondary">
+                      Live basket
+                    </Typography>
+                    <Typography variant="body1" fontWeight={850}>
+                      {itemCount} item{itemCount === 1 ? "" : "s"}
+                    </Typography>
+                    <Typography variant="body2" color="text.secondary">
+                      {formatCurrency(summary.total, currency)} total
+                    </Typography>
+                    <Button
+                      variant="contained"
+                      endIcon={<ShoppingBagRoundedIcon />}
+                      onClick={() => navigate(APP_ROUTES.cart(restaurantId, tableId, seatId))}
+                      disabled={!itemCount}
+                    >
+                      Open cart
+                    </Button>
+                  </Stack>
                 </Stack>
-              </Stack>
-            </CardContent>
-          </Card>
+              </CardContent>
+            </Card>
+
+            {lastOrder ? (
+              <LiveOrderBanner
+                order={lastOrder}
+                restaurantId={restaurantId}
+                tableId={tableId}
+                seatId={seatId}
+                dense
+                onOpenTracking={() =>
+                  navigate(APP_ROUTES.tracking(restaurantId, tableId, lastOrder.id, seatId))
+                }
+              />
+            ) : null}
+
+          </Stack>
         </Stack>
 
         <Card>
@@ -230,7 +237,7 @@ export function MenuPage() {
                 <Box>
                   <Typography variant="h6">Featured categories</Typography>
                   <Typography variant="body2" color="text.secondary">
-                    Fast access to the most popular menu sections.
+                    Fast access to the menu sections that drive most orders.
                   </Typography>
                 </Box>
                 <Chip icon={<SearchRoundedIcon />} label={`${data.menuItems.length} dishes`} />
@@ -261,9 +268,9 @@ export function MenuPage() {
                         cursor: "pointer",
                         overflow: "hidden",
                         border:
-                          activeCategoryId === category.id ? "1px solid rgba(226,55,68,0.50)" : undefined,
+                          activeCategoryId === category.id ? "1px solid rgba(15,118,110,0.32)" : undefined,
                         boxShadow:
-                          activeCategoryId === category.id ? "0 16px 40px rgba(226,55,68,0.10)" : undefined
+                          activeCategoryId === category.id ? "0 14px 30px rgba(15,118,110,0.10)" : undefined
                       }}
                     >
                       <Box
@@ -273,7 +280,7 @@ export function MenuPage() {
                         sx={{ width: "100%", aspectRatio: "1.1 / 1", objectFit: "cover" }}
                       />
                       <CardContent sx={{ p: 1.5 }}>
-                        <Typography variant="subtitle1" fontWeight={800} noWrap>
+                        <Typography variant="subtitle1" fontWeight={850} noWrap>
                           {category.name}
                         </Typography>
                         <Typography variant="body2" color="text.secondary" sx={{ mt: 0.25 }}>
@@ -319,12 +326,12 @@ export function MenuPage() {
         <Box
           sx={{
             display: "grid",
-            gap: 2.5,
+            gap: 2.25,
             gridTemplateColumns: { xs: "1fr", xl: "minmax(0, 1fr) 360px" },
             alignItems: "start"
           }}
         >
-          <Stack spacing={2.5}>
+          <Stack spacing={2.25}>
             {sections.map((section) => (
               <Card key={section.id}>
                 <CardContent sx={{ p: { xs: 2, sm: 2.5 } }}>
@@ -365,16 +372,16 @@ export function MenuPage() {
             ))}
           </Stack>
 
-          <Stack spacing={2.5} sx={{ position: { xl: "sticky" }, top: { xl: 16 } }}>
+          <Stack spacing={2.25} sx={{ position: { xl: "sticky" }, top: { xl: 16 } }}>
             <Card>
-              <CardContent sx={{ p: 2.5 }}>
-                <Stack spacing={1.5}>
+              <CardContent sx={{ p: 2.25 }}>
+                <Stack spacing={1.4}>
                   <Typography variant="subtitle2" color="text.secondary">
-                    Quick tips
+                    Shortcuts
                   </Typography>
-                  <Typography variant="h6">Cleanest ordering flow</Typography>
+                  <Typography variant="h6">Stay focused</Typography>
                   <Typography variant="body2" color="text.secondary">
-                    Tap any card for details, or use the add button for instant ordering.
+                    Use the floating cart if you are in a hurry. The menu stays scroll-light and touch friendly.
                   </Typography>
                   <Button
                     variant="outlined"
@@ -386,9 +393,21 @@ export function MenuPage() {
               </CardContent>
             </Card>
 
+            {lastOrder ? (
+              <LiveOrderBanner
+                order={lastOrder}
+                restaurantId={restaurantId}
+                tableId={tableId}
+                seatId={seatId}
+                onOpenTracking={() =>
+                  navigate(APP_ROUTES.tracking(restaurantId, tableId, lastOrder.id, seatId))
+                }
+              />
+            ) : null}
+
             <Card>
-              <CardContent sx={{ p: 2.5 }}>
-                <Stack spacing={1.25}>
+              <CardContent sx={{ p: 2.25 }}>
+                <Stack spacing={1.15}>
                   <Typography variant="subtitle2" color="text.secondary">
                     Basket total
                   </Typography>
@@ -431,6 +450,5 @@ export function MenuPage() {
         onAction={() => navigate(APP_ROUTES.cart(restaurantId, tableId, seatId))}
       />
     </CustomerLayout>
-    </>
   );
 }
