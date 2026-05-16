@@ -12,6 +12,7 @@ import { APP_ROUTES } from "../constants/routes.js";
 import { StickyCartBar } from "../features/cart/components/StickyCartBar.jsx";
 import { OrderSummaryCard } from "../features/checkout/components/OrderSummaryCard.jsx";
 import { PaymentMethodCard } from "../features/checkout/components/PaymentMethodCard.jsx";
+import { LiveOrderBanner } from "../features/orders/components/LiveOrderBanner.jsx";
 import { useRestaurantExperience } from "../hooks/useRestaurantExperience.js";
 import { CustomerLayout } from "../layouts/CustomerLayout.jsx";
 import { completeCheckoutPayment, createCheckoutSession } from "../services/orderService.js";
@@ -41,7 +42,8 @@ export function PaymentPage() {
     setPaymentMethod,
     setActiveCheckoutSession,
     setLastOrder,
-    clearCheckout
+    clearCheckout,
+    lastOrder
   } = useOrdering();
 
   const shouldLoad =
@@ -57,10 +59,7 @@ export function PaymentPage() {
   );
 
   useEffect(() => {
-    if (!data) {
-      return;
-    }
-
+    if (!data) return;
     hydrateRestaurant({
       session: data.session,
       restaurant: data.restaurant,
@@ -191,15 +190,30 @@ export function PaymentPage() {
     <CustomerLayout>
       <AppHeader
         title="Select payment"
-        subtitle={`${resolvedRestaurant?.name || "Restaurant"} / final review`}
+        subtitle={`${resolvedRestaurant?.name || "Restaurant"} · final review`}
         tableLabel={resolvedTable?.label}
         onBack={() => navigate(-1)}
       />
 
+      {lastOrder ? (
+        <Box sx={{ mb: 2.25 }}>
+          <LiveOrderBanner
+            order={lastOrder}
+            restaurantId={restaurantId}
+            tableId={tableId}
+            seatId={seatId}
+            dense
+            onOpenTracking={() =>
+              navigate(APP_ROUTES.tracking(restaurantId, tableId, lastOrder.id, seatId))
+            }
+          />
+        </Box>
+      ) : null}
+
       <Box
         sx={{
           display: "grid",
-          gap: 2.5,
+          gap: 2.25,
           gridTemplateColumns: { xs: "1fr", xl: "minmax(0, 1fr) 360px" },
           alignItems: "start"
         }}
@@ -248,8 +262,8 @@ export function PaymentPage() {
             <Card
               sx={{
                 background:
-                  "linear-gradient(135deg, rgba(255,255,255,0.98), rgba(255,240,241,0.96))",
-                border: "1px solid rgba(226,55,68,0.18)"
+                  "linear-gradient(135deg, rgba(255,255,255,0.98), rgba(245,247,241,0.98))",
+                border: "1px solid rgba(15,118,110,0.16)"
               }}
             >
               <CardContent sx={{ p: 2.5 }}>

@@ -10,6 +10,7 @@ import { LoadingState } from "../components/states/LoadingState.jsx";
 import { APP_ROUTES } from "../constants/routes.js";
 import { StickyCartBar } from "../features/cart/components/StickyCartBar.jsx";
 import { OrderSummaryCard } from "../features/checkout/components/OrderSummaryCard.jsx";
+import { LiveOrderBanner } from "../features/orders/components/LiveOrderBanner.jsx";
 import { useRestaurantExperience } from "../hooks/useRestaurantExperience.js";
 import { CustomerLayout } from "../layouts/CustomerLayout.jsx";
 import { useOrdering } from "../store/OrderingContext.jsx";
@@ -30,7 +31,8 @@ export function CheckoutPage() {
     guestDetails,
     orderNote,
     hydrateRestaurant,
-    setGuestDetails
+    setGuestDetails,
+    lastOrder
   } = useOrdering();
 
   const shouldLoad =
@@ -46,10 +48,7 @@ export function CheckoutPage() {
   );
 
   useEffect(() => {
-    if (!data) {
-      return;
-    }
-
+    if (!data) return;
     hydrateRestaurant({
       session: data.session,
       restaurant: data.restaurant,
@@ -107,15 +106,30 @@ export function CheckoutPage() {
     <CustomerLayout>
       <AppHeader
         title="Checkout"
-        subtitle={`${resolvedRestaurant?.name || "Restaurant"} / almost ready`}
+        subtitle={`${resolvedRestaurant?.name || "Restaurant"} · almost ready`}
         tableLabel={resolvedTable?.label}
         onBack={() => navigate(-1)}
       />
 
+      {lastOrder ? (
+        <Box sx={{ mb: 2.25 }}>
+          <LiveOrderBanner
+            order={lastOrder}
+            restaurantId={restaurantId}
+            tableId={tableId}
+            seatId={seatId}
+            dense
+            onOpenTracking={() =>
+              navigate(APP_ROUTES.tracking(restaurantId, tableId, lastOrder.id, seatId))
+            }
+          />
+        </Box>
+      ) : null}
+
       <Box
         sx={{
           display: "grid",
-          gap: 2.5,
+          gap: 2.25,
           gridTemplateColumns: { xs: "1fr", xl: "minmax(0, 1fr) 360px" },
           alignItems: "start"
         }}
@@ -172,8 +186,8 @@ export function CheckoutPage() {
             subtitle="Confirm the guest and order details"
           />
           <Card>
-            <CardContent sx={{ p: 2.5 }}>
-              <Stack spacing={1.5}>
+            <CardContent sx={{ p: 2.25 }}>
+              <Stack spacing={1.2}>
                 <Button
                   variant="outlined"
                   onClick={() => navigate(APP_ROUTES.cart(restaurantId, tableId, seatId))}

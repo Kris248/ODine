@@ -14,6 +14,8 @@ export const APP_ROUTES = {
     `/table/${restaurantId}/${tableId}/checkout${buildSeatQuery(seatId)}`,
   payment: (restaurantId, tableId, seatId = "") =>
     `/table/${restaurantId}/${tableId}/payment${buildSeatQuery(seatId)}`,
+  tracking: (restaurantId, tableId, orderId, seatId = "") =>
+    `/table/${restaurantId}/${tableId}/orders/${orderId}${buildSeatQuery(seatId)}`,
   confirmation: (restaurantId, tableId, orderId, seatId = "") =>
     `/table/${restaurantId}/${tableId}/confirmation/${orderId}${buildSeatQuery(seatId)}`
 };

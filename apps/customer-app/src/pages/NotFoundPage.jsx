@@ -17,7 +17,7 @@ export function NotFoundPage() {
                 404
               </Typography>
               <Typography variant="h5">Page not found</Typography>
-              <Typography color="text.secondary" sx={{ maxWidth: 520 }}>
+              <Typography color="text.secondary" sx={{ maxWidth: 520, lineHeight: 1.7 }}>
                 The route you opened does not exist. Go back to the menu and continue the table ordering flow.
               </Typography>
               <Button
