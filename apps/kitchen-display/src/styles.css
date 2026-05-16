@@ -1,17 +1,82 @@
-:root {
-  color-scheme: dark;
-}
-
-* {
-  box-sizing: border-box;
-}
-
 html,
 body,
 #root {
   min-height: 100%;
 }
 
+html {
+  color-scheme: light;
+  background: #f5f7fb;
+}
+
+* {
+  box-sizing: border-box;
+}
+
 body {
   margin: 0;
+  font-family: Inter, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  background:
+    radial-gradient(circle at top left, rgba(25, 118, 210, 0.08), transparent 22%),
+    radial-gradient(circle at top right, rgba(15, 157, 88, 0.08), transparent 24%),
+    linear-gradient(180deg, #fafbfd 0%, #f2f5f9 100%);
+  color: #101828;
+  overflow-x: hidden;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+button,
+input,
+textarea,
+select {
+  font: inherit;
+}
+
+::selection {
+  background: rgba(25, 118, 210, 0.18);
+}
+
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(100, 116, 139, 0.28);
+  border-radius: 999px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.kds-scroll {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(100, 116, 139, 0.28) transparent;
+}
+
+@keyframes kdsPulse {
+  0%,
+  100% {
+    opacity: 0.55;
+    transform: scaleX(1);
+  }
+  50% {
+    opacity: 1;
+    transform: scaleX(1.03);
+  }
+}
+
+@keyframes kdsGlow {
+  0%,
+  100% {
+    box-shadow: 0 0 0 0 rgba(25, 118, 210, 0.12);
+  }
+  50% {
+    box-shadow: 0 0 0 8px rgba(25, 118, 210, 0);
+  }
 }

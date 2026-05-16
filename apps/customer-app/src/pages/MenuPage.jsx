@@ -133,6 +133,7 @@ export function MenuPage() {
   const activeSection = activeCategoryId ? sections.find((section) => section.id === activeCategoryId) : null;
 
   return (
+    <>
     <CustomerLayout>
       <Stack spacing={2.5}>
         <Stack
@@ -430,5 +431,6 @@ export function MenuPage() {
         onAction={() => navigate(APP_ROUTES.cart(restaurantId, tableId, seatId))}
       />
     </CustomerLayout>
+    </>
   );
 }

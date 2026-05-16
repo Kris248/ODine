@@ -1,14 +1,12 @@
 import { useEffect } from "react";
 import { io } from "socket.io-client";
-import { SOCKET_EVENTS } from "@odine/shared";
+import { SOCKET_EVENTS } from "../constants/socketEvents.js";
 
 const SOCKET_URL = import.meta.env.VITE_SOCKET_URL || "http://localhost:5000";
 
 export function useKdsRealtime({ session, onPaidConfirmed, onStatusUpdated }) {
   useEffect(() => {
-    if (!session?.user?.restaurantId) {
-      return undefined;
-    }
+    if (!session?.user?.restaurantId) return undefined;
 
     const socket = io(SOCKET_URL, {
       transports: ["websocket", "polling"]
