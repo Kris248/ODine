@@ -13,21 +13,21 @@ export function OrdersModule({ orders, onUpdateStatus }) {
       <div className="entity-list">
         {orders.length === 0 ? <p>No orders available yet.</p> : null}
         {orders.map((order) => (
-          <article className="entity-row order-row" key={order._id}>
+          <article className="entity-row order-row" key={order._id || order.id}>
             <div className="entity-primary">
-              <strong>Table {order.tableId?.tableNumber}</strong>
-              <p>{order.guestName}</p>
+              <strong>Table {order.table?.label || order.tableId?.tableNumber}</strong>
+              <p>{order.guestName || order.guestDetails?.name || "Guest"}</p>
               <p>{order.items.map((item) => `${item.quantity}x ${item.name}`).join(", ")}</p>
             </div>
             <div className="entity-actions">
-              <span className="pill">{order.status}</span>
+              <span className="pill">{order.fulfillmentStatus || order.status}</span>
               <div className="action-cluster">
                 {ORDER_STATUSES.filter((status) => status !== "cancelled").map((status) => (
                   <button
                     key={status}
                     className="secondary-button"
-                    disabled={status === order.status}
-                    onClick={() => onUpdateStatus(order._id, status)}
+                    disabled={status === (order.fulfillmentStatus || order.status)}
+                    onClick={() => onUpdateStatus(order._id || order.id, status)}
                   >
                     {status}
                   </button>

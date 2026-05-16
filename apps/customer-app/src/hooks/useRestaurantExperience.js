@@ -1,35 +1,49 @@
 import { useEffect, useState } from "react";
-import { mapExperiencePayload } from "../models/menu.js";
-import { fetchTableExperience } from "../services/api/customerApi.js";
+import { getRestaurantExperience } from "../services/restaurantService.js";
 
-export function useRestaurantExperience(restaurantId, tableId) {
-  const [state, setState] = useState({
-    loading: true,
-    error: "",
-    data: null
-  });
+const idleState = {
+  loading: false,
+  error: "",
+  data: null
+};
+
+export function useRestaurantExperience(restaurantId, tableId, seatId = "", enabled = true) {
+  const [state, setState] = useState(enabled ? { ...idleState, loading: true } : idleState);
 
   useEffect(() => {
+    if (!enabled) {
+      setState(idleState);
+      return undefined;
+    }
+
     let isActive = true;
 
-    fetchTableExperience(restaurantId, tableId)
-      .then((payload) => {
+    setState((current) => ({
+      ...current,
+      loading: true,
+      error: ""
+    }));
+
+    getRestaurantExperience(restaurantId, tableId, seatId)
+      .then((data) => {
         if (!isActive) {
           return;
         }
+
         setState({
           loading: false,
           error: "",
-          data: mapExperiencePayload(payload)
+          data
         });
       })
       .catch((error) => {
         if (!isActive) {
           return;
         }
+
         setState({
           loading: false,
-          error: error.message,
+          error: error.message || "Unable to load your table right now.",
           data: null
         });
       });
@@ -37,7 +51,7 @@ export function useRestaurantExperience(restaurantId, tableId) {
     return () => {
       isActive = false;
     };
-  }, [restaurantId, tableId]);
+  }, [enabled, restaurantId, seatId, tableId]);
 
   return state;
 }

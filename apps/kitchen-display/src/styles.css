@@ -1,119 +1,17 @@
 :root {
-  font-family: "Segoe UI", sans-serif;
-  color: #f4ece7;
-  background: #121212;
+  color-scheme: dark;
 }
 
 * {
   box-sizing: border-box;
 }
 
+html,
+body,
+#root {
+  min-height: 100%;
+}
+
 body {
   margin: 0;
-}
-
-button,
-input {
-  font: inherit;
-}
-
-button {
-  cursor: pointer;
-  border: none;
-  border-radius: 12px;
-  padding: 0.75rem 0.95rem;
-  background: #eb5f28;
-  color: white;
-}
-
-.ghost {
-  background: #2a2a2a;
-}
-
-input {
-  width: 100%;
-  padding: 0.8rem 0.9rem;
-  margin-bottom: 0.8rem;
-  border-radius: 12px;
-  border: 1px solid #323232;
-  background: #1a1a1a;
-  color: white;
-}
-
-.shell {
-  min-height: 100vh;
-}
-
-.login-shell {
-  display: grid;
-  place-items: center;
-  padding: 2rem;
-}
-
-.login-panel {
-  width: min(440px, 100%);
-}
-
-.panel {
-  background: #1d1d1d;
-  border: 1px solid #2b2b2b;
-  border-radius: 22px;
-  padding: 1rem;
-}
-
-.kds-shell {
-  padding: 1.25rem;
-}
-
-.topbar {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 1rem;
-}
-
-.board {
-  display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: 1rem;
-}
-
-.column {
-  background: #151515;
-  border-radius: 24px;
-  padding: 1rem;
-}
-
-.order-card {
-  margin-bottom: 0.9rem;
-}
-
-.actions {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.5rem;
-  margin-top: 0.75rem;
-}
-
-.eyebrow {
-  text-transform: uppercase;
-  letter-spacing: 0.08em;
-  font-size: 0.8rem;
-  color: #e6a788;
-}
-
-.error {
-  color: #ff8f8f;
-}
-
-@media (max-width: 1100px) {
-  .board {
-    grid-template-columns: 1fr 1fr;
-  }
-}
-
-@media (max-width: 700px) {
-  .board {
-    grid-template-columns: 1fr;
-  }
 }
