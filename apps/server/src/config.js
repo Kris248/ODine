@@ -14,7 +14,10 @@ export const config = {
     process.env.MOCK_PAYMENT_WEBHOOK_SECRET || "odine-mock-webhook-secret",
   allowedOrigins: [
     process.env.CLIENT_URL_ADMIN || "http://localhost:5173",
+    "http://192.168.1.6:5173",
     process.env.CLIENT_URL_CUSTOMER || "http://localhost:5174",
-    process.env.CLIENT_URL_KDS || "http://localhost:5175"
+    "http://192.168.1.6:5174",
+    process.env.CLIENT_URL_KDS || "http://localhost:5175",
+    "http://192.168.1.6:5175"
   ]
 };
